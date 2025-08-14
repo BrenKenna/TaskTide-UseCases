@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Set variables from softdrive
-soft=/cvmfs/softdrive.nl/projectmine_sw
+soft=/mySoftDir
 
 
 # Set variables for reference data
 b37=${soft}/resources/Build37
 ref=${b37}/hs37d5.fa
-refHG19=/cvmfs/softdrive.nl/projectmine_sw/resources/Build37/hg19/ucsc.hg19.fasta
+refHG19=/mySoftDir
 
 
 # Set build 38 reference data
@@ -33,14 +33,8 @@ BCFTOOLS=${soft}/software/bin/bcftools
 
 
 # Set dCache paths
-MinE_Tape=gsiftp://gridftp.grid.sara.nl/pnfs/grid.sara.nl/data/lsgrid/Project_MinE/Tape
-MinE_Disk=gsiftp://gridftp.grid.sara.nl/pnfs/grid.sara.nl/data/lsgrid/Project_MinE/Disk
-SRM_Disk=srm://srm.grid.sara.nl/pnfs/grid.sara.nl/data/lsgrid/Project_MinE/Disk
-SRM_Tape=srm://srm.grid.sara.nl/pnfs/grid.sara.nl/data/lsgrid/Project_MinE/Tape
-project=${MinE_Disk}/User/${USER}/projects
-projectTape=${MinE_Tape}/User/${USER}/projects
-projectSRM=${SRM_Disk}/User/${USER}/projects
-projectTapeSRM=${SRM_Tape}/User/${USER}/projects
+project=${My_Disk}/User/${USER}/projects
+projectTape=${My_Tape}/User/${USER}/projects
 
 
 # Set bam level result path
