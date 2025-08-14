@@ -10,10 +10,15 @@
 
 # Installing software
 echo "Importing software modules"
-module load automake autoconf go gmake cmake libseccomp curl
+module load automake 
+module load autoconf
+module load go
+module load gmake
+module load cmake
+module load libseccomp
 
 # Java-17, r4.4
-module load openjdk R/4.4.2
+module load R/4.4.2
 
 
 #####################################

@@ -33,6 +33,33 @@ cd /tmp
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh -u -b -p $SOFTWARE/
 
+# Java
+rm -f $SOFT/bin/java $SOFT/bin/javac
+cd $SOFT
+wget https://download.oracle.com/java/24/latest/jdk-24_linux-x64_bin.tar.gz
+tar -xvzf jdk-24_linux-x64_bin.tar.gz && rm -f jdk-24_linux-x64_bin.tar.gz
+ln -s $SOFT/jdk-24/bin/java $SOFT/bin/java
+ln -s $SOFT/jdk-24/bin/javac $SOFT/bin/javac
+
+# TaskTide
+rm -f $SOFT/bin/tasktide
+cd $SOFT
+wget https://github.com/BrenKenna/TaskTide/releases/download/v0.9.0/tasktide-0.9.0.zip
+tar -xvzf tasktide-0.9.0.zip && rm -f tasktide-0.9.0.zip
+ln -sf $SOFT/tasktide-0.9.0/bin/tasktide $SOFT/bin/tasktide
+
+mv lib/jnosql-arangodb-1.1.6.jar jnosql/
+mv lib/jnosql-cassandra-1.1.6.jar jnosql/
+mv lib/jnosql-couchbase-1.1.6.jar jnosql/
+mv lib/jnosql-dynamodb-1.1.6.jar jnosql/
+mv lib/jnosql-mongodb-1.1.6.jar jnosql/
+mv lib/jnosql-redis-1.1.6.jar jnosql/
+mv lib/jnosql-couchdb-1.1.6.jar jnosql/
+mv lib/jnosql-mapping-document-1.1.8.jar jnosql/
+mv lib/jnosql-mapping-graph-1.1.8.jar jnosql/
+mv lib/jnosql-mapping-key-value-1.1.8.jar jnosql/
+mv lib/jnosql-mapping-column-1.1.8.jar jnosql/
+
 
 # AWS Cli
 export SOFT=$HOME/software
@@ -40,9 +67,8 @@ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "$SOFTWARE/aw
 unzip awscli.zip  && rm -f awscli.zip
 $SOFTWARE/aws/install -i $SOFTWARE/aws-cli -b $SOFTWARE/bin
 
-
 # Singularity
-conda install conda-forge::singularity bioconda::bwa-mem2 conda-forge::libpsl
+conda install conda-forge::singularity conda-forge::libpsl conda-forge::"openjdk>=23"
 
 cd $SOFT
 wget https://curl.se/download/curl-8.15.0.tar.gz
@@ -94,6 +120,11 @@ make -j 2
 cp samblaster $SOFT/bin
 cd .. && rm -fr samblaster
 
+
+# BWA Kit
+cd $SOFT/bin
+wget https://sourceforge.net/projects/bio-bwa/files/bwakit/bwakit-0.7.15_x64-linux.tar.bz2/download
+tar -xvf download && rm -f download
 
 #####################################################
 #####################################################
