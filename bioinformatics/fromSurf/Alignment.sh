@@ -6,7 +6,7 @@
 
 
 # Exit if not enough disk space
-diskSpace=$(curl -s 'https://ganglia.surfsara.nl/graph.php?g=dcache_poolgroup_report&poolgroup=projectmine_writediskpools&z=xxlarge&c=Tier1%20Cluster&h=m-dcmain.grid.sara.nl&r=hour&csv' | grep -v "NaN" | tail -n 1 | awk 'BEGIN{FS=","} { print ($NF - $(NF-2)) / 1000000000000}' | awk '{round=sprintf("%d", $1+0.5) } {print round}' | bc)
+diskSpace=$(curl -s | grep -v "NaN" | tail -n 1 | awk 'BEGIN{FS=","} { print ($NF - $(NF-2)) / 1000000000000}' | awk '{round=sprintf("%d", $1+0.5) } {print round}' | bc)
 if [ ${diskSpace} -lt 15 ] || [ -z "${diskSpace}" ]
 then
 	echo -e "\\nError not enough disk space:\\t${diskSpace}TB\\n"
@@ -55,7 +55,7 @@ elif [ "${build}" == "deCode" ] || [ "${build}" == "decode" ]
 then
         # Extract Fastq from deCode-build38
         echo -e "\\n\\nPerforming Fastq Extraction on deCode-GRCh38\\n"
-        ref=/cvmfs/softdrive.nl/projectmine_sw/resources/Build38/deCode-Reference/genome.fa
+        ref=resources/Build38/deCode-Reference/genome.fa
 
 else
 	# Otherwise exit
@@ -101,7 +101,7 @@ SrmDirRes=$(echo ${alignmentDir} | sed -e 's/gsiftp/srm/g' -e 's/gridftp/srm/g')
 inp=$(echo "${AlnBam}" | awk '{print $1/1000000000}')
 
 # Update diskSpace
-diskSpace=$(curl -s 'https://ganglia.surfsara.nl/graph.php?g=dcache_poolgroup_report&poolgroup=projectmine_writediskpools&z=xxlarge&c=Tier1%20Cluster&h=m-dcmain.grid.sara.nl&r=hour&csv' | grep -v "NaN" | tail -n 1 | awk 'BEGIN{FS=","} { print ($NF - $(NF-2)) / 1000000000000}' | awk '{round=sprintf("%d", $1+0.5) } {print round}' | bc)
+diskSpace=$(curl -s '' | grep -v "NaN" | tail -n 1 | awk 'BEGIN{FS=","} { print ($NF - $(NF-2)) / 1000000000000}' | awk '{round=sprintf("%d", $1+0.5) } {print round}' | bc)
 
 
 # Push to dCache if results are good
