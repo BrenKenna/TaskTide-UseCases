@@ -10,7 +10,7 @@
 
 # Installing software
 echo "Importing software modules"
-module load automake autoconf go gmake cmake libseccomp
+module load automake autoconf go gmake cmake libseccomp curl
 
 # Java-17, r4.4
 module load openjdk R/4.4.2
@@ -33,6 +33,9 @@ export CMAKE_INSTALL_PREFIX=$SOFT
 export PATH=$SOFT/bin:$PATH
 export LD_LIBRARY_PATH=$SOFT/lib:$LD_LIBRARY_PATH
 export PKG_CONFIG_PATH=$SOFT/lib/pkgconfig:$PKG_CONFIG_PATH
+export CPPFLAGS="-I$SOFT/include $CPPFLAGS"
+export LDFLAGS="-L$SOFT/lib $LDFLAGS"
+export PKG_CONFIG_PATH="$SOFT/lib/pkgconfig:$PKG_CONFIG_PATH"
 export CONDA_PREFIX=$SOFT
 
 export CUSTOM_MODULES=$SOFT/opt
@@ -46,6 +49,8 @@ export R_LIBS=$R_MODULES:$R_LIBS
 
 export CLASSPATH=$JAVA_MODULES:$CLASSPATH
 
+export GATK=$SOFT/bin/gatk-package-4.6.2.0-local.jar
+export BWA_DIR=$SOFT/bin/bwa
 
 # Sanity some programs
 echo "Sanity checking software config"
@@ -64,17 +69,35 @@ aws --version
 #####################################
 #####################################
 
+
 # Scratch
 export DATA_DIR="/scratch/bkenna"
+export TMPDIR=/tmp/bkenna
+export JOBDIR=$DATA_DIR/jobs
 export REF=$DATA_DIR/ref
 export B37=$REF/b37
 export B38=$REF/b38
+mkdir -p $TMPDIR
+
 
 # Result directories
-export BAM=$KG_PROCESSING/bam
-export GVCF=$KG_PROCESSING/GVCF
-export SAMPLE_META_DATA=$KG_PROCESSING/samples
+export BAM=$DATA_DIR/bam
+export GVCF=$DATA_DIR/GVCF
+export SAMPLE_META_DATA=$DATA_DIR/samples
+
+
+# Reference data
+export b37_REF=$B37/hs37d5.fa.gz
+export hg19_REF=$B37/hg19.fa.gz
+
+export b38_REF=$B38/GRCh38_full_analysis_set_plus_decoy_hla.fa
+export dbSNP=$B38/ALL_20141222.dbSNP142_human_GRCh38.snps.vcf.gz
+export OMNI=$B38/1000G_omni2.5.hg38.vcf.gz
+export MILLS=$B38/Mills_and_1000G_gold_standard.indels.b38.primary_assembly.vcf.gz
+export HAPMAP=$B38/hapmap_3.3.hg38.vcf.gz
+export KG_GOLD=$B38/1000G_phase1.snps.high_confidence.hg38.vcf.gz
+export TGT=$B38/b38-exons.bed
 
 
 # Source Data
-export KG_DATA_URL=https://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/other_exome_alignments/
+export KG_DATA_URL=https://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/other_exome_alignments

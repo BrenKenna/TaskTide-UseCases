@@ -22,6 +22,7 @@
 # Start interactive session: SLURM_SUBMIT_HOST, SLURM_JOB_ID
 srun -t 08:00:00 -n 1 -c 2 --mem=8G --pty bash
 sbatch --output=/scratch/$USER/job.log --error=/scratch/$USER/job.log --wrap='printenv'
+sbatch --output=/scratch/$USER/job-2.log --error=/scratch/$USER/job-2.log --wrap='pwd;cd $TMPDIR; pwd; cd /scratch/$SLURM_JOB_ID; pwd'
 squeue -j 130245
 sacct -j 130245
 scontrol show job 130245
@@ -41,14 +42,63 @@ $SOFTWARE/aws/install -i $SOFTWARE/aws-cli -b $SOFTWARE/bin
 
 
 # Singularity
-conda install conda-forge::
+conda install conda-forge::singularity bioconda::bwa-mem2 conda-forge::libpsl
 
+cd $SOFT
+wget https://curl.se/download/curl-8.15.0.tar.gz
+tar -xvf curl-8.15.0.tar.gz && rm -f curl-8.15.0.tar.gz && cd curl-8.15.0
+./configure --prefix=$SOFT --with-ssl
+make -j 4
+make install
+cd ../ && rm -fr curl-8.15.0/
+
+git clone --recursive https://github.com/samtools/htslib && cd htslib
+autoreconf -i
+./configure --prefix=$SOFT --with-curl=$SOFT
+make -j 4
+make install
+
+pkg-config --cflags --libs htslib
+
+
+wget https://invisible-mirror.net/archives/ncurses/current/ncurses-6.5-20241207.tgz
+tar -xvf ncurses-6.5-20241207.tgz && rm -f ncurses-6.5-20241207.tgz && cd ncurses-6.5-20241207
+./configure --prefix=$SOFT --with-shared --with-termlib
+make -j 4
+make install
+pkg-config --cflags --libs ncurses
+cd .. && rm -fr ncurses-6.5-20241207
+
+git clone --recursive https://github.com/samtools/samtools && cd samtools
+git submodule update --init --recursive
+autoreconf -i
+./configure --prefix=$SOFT \
+    CFLAGS="-I$SOFT/include" \
+    LDFLAGS="-L$SOFT/lib" \
+    LIBS="-lncursesw -ltinfo -lz -lcurl"
+make -j 4
+make install
+
+
+# Gatk4
+wget https://github.com/broadinstitute/gatk/releases/download/4.6.2.0/gatk-4.6.2.0.zip
+unzip gatk-4.6.2.0.zip && rm -f gatk-4.6.2.0.zip && cd gatk-4.6.2.0
+cp *jar ../bin/
+cd .. && rm -fr gatk-4.6.2.0
+
+
+# Samblaster
+cd $SOFT
+git clone https://github.com/GregoryFaust/samblaster.git && cd samblaster
+make -j 2
+cp samblaster $SOFT/bin
+cd .. && rm -fr samblaster
 
 
 #####################################################
 #####################################################
 ## 
-## 2). Setup Reference Data
+## 2). Setup  Reference Data
 ## 
 #####################################################
 #####################################################
@@ -73,11 +123,16 @@ wget -r -nH --cut-dirs=3 -np -R "index.html" \
     https://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/exome_pull_down_targets_phases1_and_2/
 
 
-# Target regions for variant calling
+# Target regions for variant calling: 130302
 wget https://ftp.ensembl.org/pub/release-114/regulation/homo_sapiens/GRCh38/annotation/Homo_sapiens.GRCh38.regulatory_features.v114.gff3.gz
 wget https://ftp.ensembl.org/pub/release-114/gff3/homo_sapiens/Homo_sapiens.GRCh38.114.gff3.gz
+sbatch --time=08:00:00 --output=/scratch/$USER/gff-DB.log --error=/scratch/$USER/gff-DB.log --wrap='
+cd /scratch/bkenna/ref/b38
 gffutils-cli create Homo_sapiens.GRCh38.114.gff3.gz
+'
 
+
+sbatch --time=06:00:00 --output=/scratch/$USER/resource-bundle.log --error=/scratch/$USER/resource-bundle.log bash /home/people/bkenna/gatk-resource-bundle.sh
 
 
 #####################################################
