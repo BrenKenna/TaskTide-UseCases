@@ -20,12 +20,14 @@
  
 
 # Start interactive session: SLURM_SUBMIT_HOST, SLURM_JOB_ID
-srun -t 08:00:00 -n 1 -c 2 --mem=8G --pty bash
+srun -t 08:00:00 -n 1 -c 2 --pty bash
 sbatch --output=/scratch/$USER/job.log --error=/scratch/$USER/job.log --wrap='printenv'
 sbatch --output=/scratch/$USER/job-2.log --error=/scratch/$USER/job-2.log --wrap='pwd;cd $TMPDIR; pwd; cd /scratch/$SLURM_JOB_ID; pwd'
 squeue -j 130245
 sacct -j 130245
 scontrol show job 130245
+
+sbatch --job-name "testArray" --array=1-200%10 $SOFT/bin/resource-checker.sh
 
 
 # Install miniconda
@@ -41,25 +43,6 @@ tar -xvzf jdk-24_linux-x64_bin.tar.gz && rm -f jdk-24_linux-x64_bin.tar.gz
 ln -s $SOFT/jdk-24/bin/java $SOFT/bin/java
 ln -s $SOFT/jdk-24/bin/javac $SOFT/bin/javac
 
-# TaskTide
-rm -f $SOFT/bin/tasktide
-cd $SOFT
-wget https://github.com/BrenKenna/TaskTide/releases/download/v0.9.0/tasktide-0.9.0.zip
-tar -xvzf tasktide-0.9.0.zip && rm -f tasktide-0.9.0.zip
-ln -sf $SOFT/tasktide-0.9.0/bin/tasktide $SOFT/bin/tasktide
-
-mv lib/jnosql-arangodb-1.1.6.jar jnosql/
-mv lib/jnosql-cassandra-1.1.6.jar jnosql/
-mv lib/jnosql-couchbase-1.1.6.jar jnosql/
-mv lib/jnosql-dynamodb-1.1.6.jar jnosql/
-mv lib/jnosql-mongodb-1.1.6.jar jnosql/
-mv lib/jnosql-redis-1.1.6.jar jnosql/
-mv lib/jnosql-couchdb-1.1.6.jar jnosql/
-mv lib/jnosql-mapping-document-1.1.8.jar jnosql/
-mv lib/jnosql-mapping-graph-1.1.8.jar jnosql/
-mv lib/jnosql-mapping-key-value-1.1.8.jar jnosql/
-mv lib/jnosql-mapping-column-1.1.8.jar jnosql/
-
 
 # AWS Cli
 export SOFT=$HOME/software
@@ -68,7 +51,12 @@ unzip awscli.zip  && rm -f awscli.zip
 $SOFTWARE/aws/install -i $SOFTWARE/aws-cli -b $SOFTWARE/bin
 
 # Singularity
-conda install conda-forge::singularity conda-forge::libpsl conda-forge::"openjdk>=23"
+conda install -y \
+    conda-forge::singularity \
+    conda-forge::libpsl \
+    conda-forge::jq \
+    conda-forge::tree
+
 
 cd $SOFT
 wget https://curl.se/download/curl-8.15.0.tar.gz
@@ -125,6 +113,7 @@ cd .. && rm -fr samblaster
 cd $SOFT/bin
 wget https://sourceforge.net/projects/bio-bwa/files/bwakit/bwakit-0.7.15_x64-linux.tar.bz2/download
 tar -xvf download && rm -f download
+
 
 #####################################################
 #####################################################
@@ -196,3 +185,130 @@ tml" > tmp
 done
 rm tmp
 '
+
+
+
+#####################################################
+#####################################################
+## 
+## 4). Install TaskTide
+## 
+#####################################################
+#####################################################
+
+
+# TaskTide
+rm -f $SOFT/bin/tasktide
+cd $JAVA_MODULES
+wget https://github.com/BrenKenna/TaskTide/releases/download/v0.9.0/tasktide-0.9.0.zip
+tar -xvzf tasktide-0.9.0.zip
+ln -sf $JAVA_MODULES/tasktide-0.9.0/bin/tasktide $SOFT/bin/tasktide
+
+mkdir jnosql
+mv lib/jnosql-arangodb-1.1.6.jar jnosql/
+mv lib/jnosql-cassandra-1.1.6.jar jnosql/
+mv lib/jnosql-couchbase-1.1.6.jar jnosql/
+mv lib/jnosql-dynamodb-1.1.6.jar jnosql/
+mv lib/jnosql-mongodb-1.1.6.jar jnosql/
+mv lib/jnosql-redis-1.1.6.jar jnosql/
+mv lib/jnosql-couchdb-1.1.6.jar jnosql/
+mv lib/jnosql-mapping-graph-1.1.8.jar jnosql/
+mv lib/jnosql-mapping-key-value-1.1.8.jar jnosql/
+mv lib/jnosql-mapping-column-1.1.8.jar jnosql/
+
+
+# Test then clear zip
+which tasktide
+tasktide
+rm -f tasktide-0.9.0.zip
+
+
+# Check imported 
+echo -e ".tables\n.schema" | sqlite3 $ITEMSTORE_SQL/WORKITEM/master
+echo -e "SELECT Payload FROM Items;" | sqlite3 $ITEMSTORE_SQL/WORKITEM/master | jq -s '[.[] | { Id: .Id, ItemState: .ItemState }]'
+
+'''
+Items
+
+CREATE TABLE Items(
+        Auto_Id INTEGER PRIMARY KEY AUTOINCREMENT,
+        Id TEXT UNIQUE NOT NULL,
+        State TEXT NOT NULL,
+        Payload TEXT NOT NULL
+    );
+CREATE TABLE sqlite_sequence(name,seq);
+
+[
+  {
+    "Id": "WorkItem-5af2a975-7e51-4a6b-90e3-0b19be4b20a8",
+    "ItemState": "TODO"
+  },
+  {
+    "Id": "WorkItem-6d75e71a-dabb-4c63-add7-99b36146147c",
+    "ItemState": "TODO"
+  },
+  {
+    "Id": "WorkItem-2d2c58c7-17f4-47bf-9586-ae3c6d592319",
+    "ItemState": "TODO"
+  },
+  {
+    "Id": "WorkItem-0b4d7a4c-d0fe-462e-9284-b344531044d6",
+    "ItemState": "TODO"
+  },
+  {
+    "Id": "WorkItem-43aa6caf-5940-41d0-a477-e34077ee86bb",
+    "ItemState": "TODO"
+  }
+]
+'''
+
+
+# Launch engine in a job
+sed -i 's/^tasktide\.client=manager$/tasktide.client=engine/' $TASK_TIDE_CONF
+
+sbatch \
+    --job-name="TaskTide-Engine-Test" \
+    -t 08:00:00 -n 1 -c 3 \
+    --output=$TASK_TIDE/logs/Batch-Job.log --error=$TASK_TIDE/logs/Batch-Job.log \
+    job-runner-task-tide.sh
+
+echo -e "SELECT Payload FROM Items;" | sqlite3 $ITEMSTORE_SQL/WORKITEM/master | \
+    jq -s '[ .[] | .Workload.Workload[].id | {id: .id, "Task State": ."Task State"} ]'
+
+squeue -j 130700
+sacct -j 130700
+scontrol show job 130700
+
+'''
+JobID           JobName  Partition    Account  AllocCPUS      State ExitCode 
+------------ ---------- ---------- ---------- ---------- ---------- --------
+130700       TaskTide-+     shared shared_acc          3  COMPLETED      0:0
+130700.batch      batch            shared_acc          3  COMPLETED      0:0
+130700.exte+     extern            shared_acc          3  COMPLETED      0:0
+
+
+[
+  {
+    "Id": "ItemTask-0d4d4f91-17e8-4e06-be15-2693e7b2e50e",
+    "Task": "seq 3",
+    "Task State": "COMPLETE"
+  },
+  {
+    "Id": "ItemTask-1f7e4a0f-b259-4ae9-a2d0-e9b870e016c9",
+    "Task": "seq 10",
+    "Task State": "COMPLETE"
+  },
+  {
+    "Id": "ItemTask-acf491cc-b55b-42a7-92e9-08622da5dfb6",
+    "Task": "seq cherp",
+    "Task State": "ERROR"
+  },
+  {
+    "Id": "ItemTask-3df9c4ef-cc53-4fff-8f5d-7421da3e1d60",
+    "Task": "seq dcu.ie",
+    "Task State": "ERROR"
+  }
+]
+
+'''
+

@@ -18,6 +18,7 @@ module load cmake
 module load libseccomp
 
 # Java-17, r4.4
+module load java
 module load R/4.4.2
 
 
@@ -47,6 +48,10 @@ export CUSTOM_MODULES=$SOFT/opt
 export PYTHON_MODULES=$CUSTOM_MODULES/python
 export R_MODULES=$CUSTOM_MODULES/r
 export JAVA_MODULES=$CUSTOM_MODULES/java
+export TASK_TIDE=$DATA_DIR/TaskTide
+export TASK_TIDE_CONF=$JAVA_MODULES/tasktide-0.9.0/config/META-INF/microprofile-config.properties
+export ITEMSTORE_SQL=$TASK_TIDE/itemStore/sqlite
+export ITEMSTORE_ROCKS=$TASK_TIDE/itemStore/rocksDB
 
 export PYTHONPATH=$PYTHON_MODULES:$PYTHONPATH
 export R_LIBS_USER=$R_MODULES
