@@ -42,16 +42,14 @@ export PKG_CONFIG_PATH=$SOFT/lib/pkgconfig:$PKG_CONFIG_PATH
 export CPPFLAGS="-I$SOFT/include $CPPFLAGS"
 export LDFLAGS="-L$SOFT/lib $LDFLAGS"
 export PKG_CONFIG_PATH="$SOFT/lib/pkgconfig:$PKG_CONFIG_PATH"
+export PREFIX=$SOFT
 export CONDA_PREFIX=$SOFT
 
 export CUSTOM_MODULES=$SOFT/opt
 export PYTHON_MODULES=$CUSTOM_MODULES/python
 export R_MODULES=$CUSTOM_MODULES/r
 export JAVA_MODULES=$CUSTOM_MODULES/java
-export TASK_TIDE=$DATA_DIR/TaskTide
-export TASK_TIDE_CONF=$JAVA_MODULES/tasktide-0.9.0/config/META-INF/microprofile-config.properties
-export ITEMSTORE_SQL=$TASK_TIDE/itemStore/sqlite
-export ITEMSTORE_ROCKS=$TASK_TIDE/itemStore/rocksDB
+export ROCKS_CLI=$SOFT/rocksdb
 
 export PYTHONPATH=$PYTHON_MODULES:$PYTHONPATH
 export R_LIBS_USER=$R_MODULES
@@ -111,3 +109,10 @@ export TGT=$B38/b38-exons.bed
 
 # Source Data
 export KG_DATA_URL=https://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/other_exome_alignments
+
+
+# Task tide
+export TASK_TIDE=$DATA_DIR/TaskTide
+export TASK_TIDE_CONF=$JAVA_MODULES/tasktide-0.9.0/config/META-INF/microprofile-config.properties
+export ITEMSTORE_SQL=$TASK_TIDE/itemStore/sqlite
+export ITEMSTORE_ROCKS=$TASK_TIDE/itemStore/rocksDB

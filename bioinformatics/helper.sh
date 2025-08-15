@@ -13,185 +13,7 @@
 #####################################################
 #####################################################
 ## 
-## 1). Setup Environment
-## 
-#####################################################
-#####################################################
- 
-
-# Start interactive session: SLURM_SUBMIT_HOST, SLURM_JOB_ID
-srun -t 08:00:00 -n 1 -c 2 --pty bash
-sbatch --output=/scratch/$USER/job.log --error=/scratch/$USER/job.log --wrap='printenv'
-sbatch --output=/scratch/$USER/job-2.log --error=/scratch/$USER/job-2.log --wrap='pwd;cd $TMPDIR; pwd; cd /scratch/$SLURM_JOB_ID; pwd'
-squeue -j 130245
-sacct -j 130245
-scontrol show job 130245
-
-sbatch --job-name "testArray" --array=1-200%10 $SOFT/bin/resource-checker.sh
-
-
-# Install miniconda
-cd /tmp
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh -u -b -p $SOFTWARE/
-
-# Java
-rm -f $SOFT/bin/java $SOFT/bin/javac
-cd $SOFT
-wget https://download.oracle.com/java/24/latest/jdk-24_linux-x64_bin.tar.gz
-tar -xvzf jdk-24_linux-x64_bin.tar.gz && rm -f jdk-24_linux-x64_bin.tar.gz
-ln -s $SOFT/jdk-24/bin/java $SOFT/bin/java
-ln -s $SOFT/jdk-24/bin/javac $SOFT/bin/javac
-
-
-# AWS Cli
-export SOFT=$HOME/software
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "$SOFTWARE/awscli.zip"
-unzip awscli.zip  && rm -f awscli.zip
-$SOFTWARE/aws/install -i $SOFTWARE/aws-cli -b $SOFTWARE/bin
-
-# Singularity
-conda install -y \
-    conda-forge::singularity \
-    conda-forge::libpsl \
-    conda-forge::jq \
-    conda-forge::tree
-
-
-cd $SOFT
-wget https://curl.se/download/curl-8.15.0.tar.gz
-tar -xvf curl-8.15.0.tar.gz && rm -f curl-8.15.0.tar.gz && cd curl-8.15.0
-./configure --prefix=$SOFT --with-ssl
-make -j 4
-make install
-cd ../ && rm -fr curl-8.15.0/
-
-git clone --recursive https://github.com/samtools/htslib && cd htslib
-autoreconf -i
-./configure --prefix=$SOFT --with-curl=$SOFT
-make -j 4
-make install
-
-pkg-config --cflags --libs htslib
-
-
-wget https://invisible-mirror.net/archives/ncurses/current/ncurses-6.5-20241207.tgz
-tar -xvf ncurses-6.5-20241207.tgz && rm -f ncurses-6.5-20241207.tgz && cd ncurses-6.5-20241207
-./configure --prefix=$SOFT --with-shared --with-termlib
-make -j 4
-make install
-pkg-config --cflags --libs ncurses
-cd .. && rm -fr ncurses-6.5-20241207
-
-git clone --recursive https://github.com/samtools/samtools && cd samtools
-git submodule update --init --recursive
-autoreconf -i
-./configure --prefix=$SOFT \
-    CFLAGS="-I$SOFT/include" \
-    LDFLAGS="-L$SOFT/lib" \
-    LIBS="-lncursesw -ltinfo -lz -lcurl"
-make -j 4
-make install
-
-
-# Gatk4
-wget https://github.com/broadinstitute/gatk/releases/download/4.6.2.0/gatk-4.6.2.0.zip
-unzip gatk-4.6.2.0.zip && rm -f gatk-4.6.2.0.zip && cd gatk-4.6.2.0
-cp *jar ../bin/
-cd .. && rm -fr gatk-4.6.2.0
-
-
-# Samblaster
-cd $SOFT
-git clone https://github.com/GregoryFaust/samblaster.git && cd samblaster
-make -j 2
-cp samblaster $SOFT/bin
-cd .. && rm -fr samblaster
-
-
-# BWA Kit
-cd $SOFT/bin
-wget https://sourceforge.net/projects/bio-bwa/files/bwakit/bwakit-0.7.15_x64-linux.tar.bz2/download
-tar -xvf download && rm -f download
-
-
-#####################################################
-#####################################################
-## 
-## 2). Setup  Reference Data
-## 
-#####################################################
-#####################################################
-
-
-# Build37 reference genome
-cd $B37
-wget -c ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/phase2_reference_assembly_sequence/hs37d5.fa.gz
-wget -c http://hgdownload.cse.ucsc.edu/goldenpath/hg19/bigZips/hg19.fa.gz
-
-
-# Build38 reference data
-cd $B38
-
-wget -r -nH --cut-dirs=3 -np -R "index.html*" \
-     ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/GRCh38_reference_genome/
-
-wget -r -nH --cut-dirs=3 -np -R "index.html*" \
-    https://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/phase2_mapping_resources/
-
-wget -r -nH --cut-dirs=3 -np -R "index.html" \
-    https://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/exome_pull_down_targets_phases1_and_2/
-
-
-# Target regions for variant calling: 130302
-wget https://ftp.ensembl.org/pub/release-114/regulation/homo_sapiens/GRCh38/annotation/Homo_sapiens.GRCh38.regulatory_features.v114.gff3.gz
-wget https://ftp.ensembl.org/pub/release-114/gff3/homo_sapiens/Homo_sapiens.GRCh38.114.gff3.gz
-sbatch --time=08:00:00 --output=/scratch/$USER/gff-DB.log --error=/scratch/$USER/gff-DB.log --wrap='
-cd /scratch/bkenna/ref/b38
-gffutils-cli create Homo_sapiens.GRCh38.114.gff3.gz
-'
-
-
-sbatch --time=06:00:00 --output=/scratch/$USER/resource-bundle.log --error=/scratch/$USER/resource-bundle.log bash /home/people/bkenna/gatk-resource-bundle.sh
-
-
-#####################################################
-#####################################################
-## 
-## 3). Setup Sample Database
-## 
-#####################################################
-#####################################################
-
-
-# List samples
-sbatch --time=06:00:00 --cpus-per-task=1 --wrap='
-cd /scratch/bkenna
-export KG_DATA_URL=https://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/other_exome_alignments
-wget -qO- ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/other_exome_alignments/ | \
-    grep -oP "(?<=href=\")[^\"/].*" | \
-    awk -F / "{ print \$(NF-3)\"\t\"\$(NF-2) }" | \
-    sed "s/\">//g" \
-> samples.txt
-
-rm -f sampleTracking.txt && touch sampleTracking.txt
-for sample in $(cut -f 1 samples.txt)
-do
-    wget -qO- "${KG_DATA_URL}/${sample}/exome_alignment/" | grep "a href" | cut -d = -f 2 | cut -d \" -f 2 | grep -ve "h
-tml" > tmp
-    bam=$(cat tmp | grep -e "bam$" -e "cram$")
-    files=$(cat tmp | xargs)
-    echo "${sample}|${KG_DATA_URL}/${sample}/exome_alignment/${bam}|${files}" >> sampleTracking.txt
-done
-rm tmp
-'
-
-
-
-#####################################################
-#####################################################
-## 
-## 4). Install TaskTide
+## 1). Install TaskTide
 ## 
 #####################################################
 #####################################################
@@ -215,6 +37,15 @@ mv lib/jnosql-couchdb-1.1.6.jar jnosql/
 mv lib/jnosql-mapping-graph-1.1.8.jar jnosql/
 mv lib/jnosql-mapping-key-value-1.1.8.jar jnosql/
 mv lib/jnosql-mapping-column-1.1.8.jar jnosql/
+
+
+#####################################################
+#####################################################
+## 
+## 2). Test TaskTide Installation
+## 
+#####################################################
+#####################################################
 
 
 # Test then clear zip
@@ -272,14 +103,19 @@ sbatch \
     --output=$TASK_TIDE/logs/Batch-Job.log --error=$TASK_TIDE/logs/Batch-Job.log \
     job-runner-task-tide.sh
 
+
+# Check in on tasks on job
 echo -e "SELECT Payload FROM Items;" | sqlite3 $ITEMSTORE_SQL/WORKITEM/master | \
-    jq -s '[ .[] | .Workload.Workload[].id | {id: .id, "Task State": ."Task State"} ]'
+    jq -s '[ .[] | .Workload.Workload[] | {id: .id, "Task State": ."Task State"} ]'
+
 
 squeue -j 130700
 sacct -j 130700
 scontrol show job 130700
 
-'''
+
+''' --> Worked perfectly
+
 JobID           JobName  Partition    Account  AllocCPUS      State ExitCode 
 ------------ ---------- ---------- ---------- ---------- ---------- --------
 130700       TaskTide-+     shared shared_acc          3  COMPLETED      0:0
@@ -312,3 +148,221 @@ JobID           JobName  Partition    Account  AllocCPUS      State ExitCode
 
 '''
 
+
+# Run with rocksDB
+sed -i 's/^tasktide\.client=manager$/tasktide.client=engine/' $TASK_TIDE_CONF
+
+sbatch \
+    --job-name="TaskTide-Engine-Test-RocksDB" \
+    -t 08:00:00 -n 1 -c 3 \
+    --output=$TASK_TIDE/logs/Batch-Job-RocksDB.log --error=$TASK_TIDE/logs/Batch-Job-RocksDB.log \
+    job-runner-task-tide.sh
+
+
+sacct -j 130707
+$ROCKS_CLI/ldb --db=$ITEMSTORE_ROCKS/WORKITEM dump | jq | head
+
+
+''' --> Should also be fine now
+
+JobID           JobName  Partition    Account  AllocCPUS      State ExitCode 
+------------ ---------- ---------- ---------- ---------- ---------- --------
+130707       TaskTide-+     shared shared_acc          3  COMPLETED      0:0
+130707.batch      batch            shared_acc          3  COMPLETED      0:0
+130707.exte+     extern            shared_acc          3  COMPLETED      0:0
+
+
+'''
+
+
+
+
+#####################################################
+#####################################################
+## 
+## 2). Test TaskTide Installation
+##
+## How would config validator look?
+## Configure log dirs 
+## 
+#####################################################
+#####################################################
+
+
+# Configure tasks
+sqlite3 $SAMPLE_META_DATA/sample-meta-data.db <<'EOF'
+
+-- Clear Previous Run
+DROP TABLE IF EXISTS AlignmentQueue;
+
+-- Create queue
+CREATE TABLE IF NOT EXISTS AlignmentQueue (
+    WorkItemId TEXT,
+    TaskScript TEXT
+);
+
+-- Insert Records
+INSERT INTO AlignmentQueue
+    SELECT
+        CONCAT(SampleId, '-Alignment') AS 'WorkItemId',
+        CONCAT(
+            'bash /home/people/bkenna/software/bin/alignment-scripts/Alignment.sh ',
+            CONCAT(
+                SampleId,
+                CONCAT(
+                    ' ',
+                    SourceBam
+                )
+            )
+        ) AS 'Task'
+    FROM
+        SampleTracking 
+    WHERE
+        RealignedCram IS NULL
+    ORDER BY
+        RANDOM()
+;
+
+
+-- Sanity queue config
+SELECT * FROM AlignmentQueue LIMIT 10;
+
+EOF
+
+
+
+# Fetch first two for testing
+cd $TASK_TIDE
+echo -e "SELECT * FROM AlignmentQueue LIMIT 30;" | sqlite3 $SAMPLE_META_DATA/sample-meta-data.db > $SOFT/opt/java/tasktide-0.9.0/config/alignment-test-tasks.txt
+wc -l $SOFT/opt/java/tasktide-0.9.0/config/alignment-test-tasks.txt
+
+''' --> Just for reference
+HG00626-Alignment|bash /home/people/bkenna/software/bin/alignment-scripts/Alignment.sh HG00626 https://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/other_exome_alignments/HG00626/exome_alignment/HG00626.mapped.illumina.mosaik.CHS.exome.20111114.bam
+HG00335-Alignment|bash /home/people/bkenna/software/bin/alignment-scripts/Alignment.sh HG00335 https://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/other_exome_alignments/HG00335/exome_alignment/HG00335.mapped.illumina.mosaik.FIN.exome.20111114.bam
+
+2 /scratch/bkenna/TaskTide/alignment-test-tasks.txt
+
+'''
+
+
+# Import data
+cp $TASK_TIDE_CONF.bak $TASK_TIDE_CONF 
+cp $TASK_TIDE_CONF $TASK_TIDE_CONF.bak
+
+sed -i 's/tasktide.client=engine/tasktide.client=manager/' $TASK_TIDE_CONF
+sed -i 's#tasktide.manager.inputFile=singleTaskImports.txt#tasktide.manager.inputFile=alignment-test-tasks.txt#g' $TASK_TIDE_CONF
+
+sed -i 's/tasktide.manager.targetStep=myStep/tasktide.manager.targetStep=Alignment/' $TASK_TIDE_CONF
+sed -i 's/tasktide.manager.nestedDelimiter=,//' $TASK_TIDE_CONF
+
+sed -i 's/tasktide.core.repository.type=rocksDB/tasktide.core.repository.type=sqlite/' $TASK_TIDE_CONF
+sed -i 's#tasktide.core.repository.file-path=/scratch/bkenna/TaskTide/itemStore/rocksDB#tasktide.core.repository.file-path=/scratch/bkenna/TaskTide/itemStore/sqlite#' $TASK_TIDE_CONF
+
+sed -i 's/tasktide.engine.step=derp,myStep,berp/tasktide.engine.step=Alignment/' $TASK_TIDE_CONF
+
+
+# Import tasks
+rm -fr itemStore/ sqliteDbStore/
+sed -i 's/tasktide.client=engine/tasktide.client=manager/' $TASK_TIDE_CONF
+tasktide
+
+''' --> Needs some work here, JSON  vs FILE as format, display where. 
+
+## - Argument Handling
+## - Table backup before action? Towards oopsies
+
+2025-08-15 16:53:57 INFO  [ main -> org.tasktide.core.repository.itemstore_repo.ItemStoreRepositoryUtility.fetchItemStore ]: ItemStore Directory created under: 'sqliteDbStore/STEP'
+2025-08-15 16:53:57 INFO  [ main -> org.tasktide.core.repository.itemstore_repo.ItemStoreRepositoryUtility.fetchItemStore ]: ItemStore Directory created under: 'sqliteDbStore/WORKFLOW'        
+2025-08-15 16:53:57 INFO  [ main -> org.tasktide.tasktide.TaskTide.main ]: ServiceManager state is now: 'true'
+2025-08-15 16:53:57 INFO  [ main -> org.tasktide.tasktide.TaskTide.main ]: Constructing client: 'Manager'
+2025-08-15 16:53:57 INFO  [ main -> org.tasktide.tasktide.client.TaskTideManagerClient.importFile ]: Evaluating nested delimiter of value 'null'
+2025-08-15 16:53:57 INFO  [ main -> org.tasktide.tasktide.client.TaskTideManagerClient.handleImport ]: Importing '2' workitems
+2025-08-15 16:53:57 INFO  [ main -> org.tasktide.tasktide.client.TaskTideManagerClient.handleImport ]: Import status 'true'
+2025-08-15 16:53:57 INFO  [ main -> org.tasktide.tasktide.TaskTide.main ]: TaskTideClient completed, tearing down container
+
+'''
+
+
+# Run engine as two separate elements in job array: Left out engine.step
+sed -i 's/tasktide.client=manager/tasktide.client=engine/' $TASK_TIDE_CONF
+
+sbatch \
+    --job-name="TaskTide-Alignment-Test" \
+    --array="1-10%3" \
+    -t 24:00:00 -n 1 -c 9 \
+    --output=$TASK_TIDE/logs/Alignment-%a.log --error=$TASK_TIDE/logs/Alignment-%a.log \
+    $SOFT/bin/job-runner-task-tide.sh
+
+sacct -j 131091
+squeue -j 131091
+
+''' --> Arbitray does get pulled
+
+JobID           JobName  Partition    Account  AllocCPUS      State ExitCode 
+------------ ---------- ---------- ---------- ---------- ---------- --------
+131079_1     TaskTide-+     shared shared_acc          8    RUNNING      0:0
+131079_1.ba+      batch            shared_acc          8    RUNNING      0:0
+131079_1.ex+     extern            shared_acc          8    RUNNING      0:0
+131079_2     TaskTide-+     shared shared_acc          0    PENDING      0:0
+
+2025-08-15 17:02:44 INFO  [ main -> org.tasktide.tasktide.TaskTide.main ]: ServiceManager state is now: 'true'
+2025-08-15 17:02:44 INFO  [ main -> org.tasktide.tasktide.TaskTide.main ]: Constructing client: 'Engine'
+2025-08-15 17:02:44 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Determing how to process workload
+2025-08-15 17:02:44 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Processing single step:    'Arbitrary'
+2025-08-15 17:02:44 WARN  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Warning, no ToDo tasks available for processing. Query below backend for more information
+
+{Collection Name=WorkItem-Service, Model Class=WorkItem, Repository Type=Item Store}
+
+
+2025-08-15 17:02:44 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Processing complete for step:      'Arbitrary'
+2025-08-15 17:02:44 INFO  [ main -> org.tasktide.tasktide.TaskTide.main ]: TaskTideClient completed, tearing down container
+
+'''
+
+
+# Resubmitted with engine step
+sbatch \
+    --job-name="TaskTide-Alignment-Test" \
+    --array="1-2%1" \
+    -t 24:00:00 -n 1 -c 8 \
+    --output=$TASK_TIDE/logs/Alignment-%a.log --error=$TASK_TIDE/logs/Alignment-%a.log \
+    $SOFT/bin/job-runner-task-tide.sh
+
+
+# Check in on tasks on job: Single threaded run
+
+sacct -j 131085
+
+squeue -j 131085
+
+echo -e "SELECT Payload FROM Items;" | sqlite3 $ITEMSTORE_SQL/WORKITEM/master | \
+    jq -s '[ .[] | {id: .Id, "ItemState": ."ItemState"} ]'
+
+echo -e "SELECT Payload FROM Items;" | sqlite3 $ITEMSTORE_SQL/WORKITEM/master | \
+    jq -s '[ .[].Workload.Workload[]| {id: .id, "Task State": ."Task State"} ]'
+
+echo "SELECT Id, State FROM Items WHERE State != 'ToDo';" | sqlite3 $ITEMSTORE_SQL/WORKITEM/master
+
+ls -lht /tmp/bkenna/130860/*/*
+
+''' --> All is well, logs do not immediately start to write. Takes a while for files to write
+
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+   131091_[4-10%3]    shared TaskTide   bkenna PD       0:00      1 (JobArrayTaskLimit)
+          131091_1    shared TaskTide   bkenna  R      12:49      1 sonic52
+          131091_2    shared TaskTide   bkenna  R      12:49      1 sonic72
+          131091_3    shared TaskTide   bkenna  R      12:49      1 sonic60
+
+
+WorkItem-e7735a39-ee78-4c3b-a8cc-9b76d0462b52|Locked
+WorkItem-e5356468-b062-4c1a-8cfc-e87fba026cf6|Locked
+WorkItem-950a4034-01ea-4173-84cf-45db4169947f|Locked
+
+/tmp/bkenna/130860/HG00626-Alignment:
+total 1.5G
+-rw-r--r--. 1 bkenna shared 1.5G Aug 15 17:46 HG00626.mapped.illumina.mosaik.CHS.exome.20111114.bam
+
+/tmp/bkenna/130860/HG00335-Alignment:
+total 0
+
+'''
