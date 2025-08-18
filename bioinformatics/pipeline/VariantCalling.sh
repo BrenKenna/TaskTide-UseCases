@@ -18,18 +18,26 @@ then
     exit 1
 fi
 
+wrk=$TMPDIR/$SLURM_JOB_ID/$SM-Alignment
+mkdir -p $wrk
 
 # Run haplotype caller
 echo -e "\\nPerforming WXS Calling\\n"
 mkdir -p $GVCF/$SM/
-/usr/bin/time java -Djava.io.tmpdir=$wrk -jar $GATK \
-    HaplotypeCaller --native-pair-hmm-threads 2 \
-    -R $b38_REF--dbsnp $dbSNP \
+samtools view -h -b $bam > $wrk/$SM.bam
+samtools index $wrk/$SM.bam
+
+time java -Djava.io.tmpdir=$wrk -jar $GATK \
+    HaplotypeCaller \
+    --native-pair-hmm-threads 2 \
+    -R $b38_REF --dbsnp $dbSNP \
     -ERC GVCF -L $TGT \
-    -I $base -O $GVCF/$SM/SM.g.vcf.gz &>> $GVCF/$SM/$SM.vcf.log
+    -I $wrk/$SM.bam \
+    -O $GVCF/$SM/$SM.g.vcf.gz &>> $GVCF/$SM/$SM.vcf.log
 
 cd $GVCF/$SM/
-md5sum ${SM}.g.vcf.gz* > ${SM}.md5sum
+md5sum $SM.g.vcf.gz* > $SM.md5sum
+
 
 # Check results
-bash ${soft}/gVCF_Check.sh ${SM}.g.vcf.gz
+bash $SOFT/bin/alignment-scripts/gVCF-Checks.sh $SM.g.vcf.gz

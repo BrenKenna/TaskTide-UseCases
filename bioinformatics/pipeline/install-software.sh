@@ -96,10 +96,10 @@ make install
 
 
 # Gatk4
-wget https://github.com/broadinstitute/gatk/releases/download/4.6.2.0/gatk-4.6.2.0.zip
-unzip gatk-4.6.2.0.zip && rm -f gatk-4.6.2.0.zip && cd gatk-4.6.2.0
+wget https://github.com/broadinstitute/gatk/releases/download/4.1.4.0/gatk-4.1.4.0.zip
+unzip gatk-4.1.4.0.zip && rm -f gatk-4.1.4.0.zip && cd gatk-4.1.4.0
 cp *jar ../bin/
-cd .. && rm -fr gatk-4.6.2.0
+cd .. && rm -fr gatk-4.1.4.0
 
 
 # Samblaster

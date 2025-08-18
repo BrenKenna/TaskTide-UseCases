@@ -60,6 +60,7 @@ export CLASSPATH=$JAVA_MODULES:$CLASSPATH
 export GATK=$SOFT/bin/gatk-package-4.6.2.0-local.jar
 export BWA_DIR=$SOFT/bin/bwa
 
+
 # Sanity some programs
 echo "Sanity checking software config"
 parallel --version
@@ -90,7 +91,7 @@ mkdir -p $TMPDIR
 
 # Result directories
 export BAM=$DATA_DIR/bam
-export GVCF=$DATA_DIR/GVCF
+export GVCF=$DATA_DIR/gVCF
 export SAMPLE_META_DATA=$DATA_DIR/samples
 
 
@@ -104,7 +105,9 @@ export OMNI=$B38/1000G_omni2.5.hg38.vcf.gz
 export MILLS=$B38/Mills_and_1000G_gold_standard.indels.b38.primary_assembly.vcf.gz
 export HAPMAP=$B38/hapmap_3.3.hg38.vcf.gz
 export KG_GOLD=$B38/1000G_phase1.snps.high_confidence.hg38.vcf.gz
-export TGT=$B38/b38-exons.bed
+export KNOWN_INDELS=$B38/Homo_sapiens_assembly38.known_indels.vcf.gz
+export EXON_BED=$B38/b38-exons.bed
+export TGT=$B38/b38-exons-loci.bed
 
 
 # Source Data

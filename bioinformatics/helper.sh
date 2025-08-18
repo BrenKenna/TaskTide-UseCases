@@ -180,7 +180,7 @@ JobID           JobName  Partition    Account  AllocCPUS      State ExitCode
 #####################################################
 #####################################################
 ## 
-## 2). Test TaskTide Installation
+## 2). Test TaskTide Sequence Alignment
 ##
 ## How would config validator look?
 ## Configure log dirs 
@@ -190,7 +190,7 @@ JobID           JobName  Partition    Account  AllocCPUS      State ExitCode
 
 
 # Configure tasks
-sqlite3 $SAMPLE_META_DATA/sample-meta-data.db <<'EOF'
+sqlite3 $SAMPLE_META_DATA/sample-meta-data.db <<EOF
 
 -- Clear Previous Run
 DROP TABLE IF EXISTS AlignmentQueue;
@@ -262,6 +262,7 @@ sed -i 's/tasktide.engine.step=derp,myStep,berp/tasktide.engine.step=Alignment/'
 
 
 # Import tasks
+cd $TASK_TIDE
 rm -fr itemStore/ sqliteDbStore/
 sed -i 's/tasktide.client=engine/tasktide.client=manager/' $TASK_TIDE_CONF
 tasktide
@@ -287,14 +288,14 @@ tasktide
 sed -i 's/tasktide.client=manager/tasktide.client=engine/' $TASK_TIDE_CONF
 
 sbatch \
-    --job-name="TaskTide-Alignment-Test" \
+    --job-name="TaskTide-DedupBQSR-Test" \
     --array="1-10%3" \
-    -t 24:00:00 -n 1 -c 9 \
-    --output=$TASK_TIDE/logs/Alignment-%a.log --error=$TASK_TIDE/logs/Alignment-%a.log \
+    -t 48:00:00 -n 1 -c 9 \
+    --output=$TASK_TIDE/logs/DedupBQSR-%a.log --error=$TASK_TIDE/logs/DedupBQSR-%a.log \
     $SOFT/bin/job-runner-task-tide.sh
 
-sacct -j 131091
-squeue -j 131091
+sacct -j 131125
+squeue -j 131125
 
 ''' --> Arbitray does get pulled
 
@@ -320,20 +321,10 @@ JobID           JobName  Partition    Account  AllocCPUS      State ExitCode
 '''
 
 
-# Resubmitted with engine step
-sbatch \
-    --job-name="TaskTide-Alignment-Test" \
-    --array="1-2%1" \
-    -t 24:00:00 -n 1 -c 8 \
-    --output=$TASK_TIDE/logs/Alignment-%a.log --error=$TASK_TIDE/logs/Alignment-%a.log \
-    $SOFT/bin/job-runner-task-tide.sh
-
-
 # Check in on tasks on job: Single threaded run
+sacct -j 131125
+squeue -j 131125
 
-sacct -j 131085
-
-squeue -j 131085
 
 echo -e "SELECT Payload FROM Items;" | sqlite3 $ITEMSTORE_SQL/WORKITEM/master | \
     jq -s '[ .[] | {id: .Id, "ItemState": ."ItemState"} ]'
@@ -342,6 +333,9 @@ echo -e "SELECT Payload FROM Items;" | sqlite3 $ITEMSTORE_SQL/WORKITEM/master | 
     jq -s '[ .[].Workload.Workload[]| {id: .id, "Task State": ."Task State"} ]'
 
 echo "SELECT Id, State FROM Items WHERE State != 'ToDo';" | sqlite3 $ITEMSTORE_SQL/WORKITEM/master
+
+echo "SELECT State, COUNT(DISTINCT Id) as 'N Tasks' FROM Items GROUP BY State;" | sqlite3 $ITEMSTORE_SQL/WORKITEM/master
+
 
 ls -lht /tmp/bkenna/130860/*/*
 
@@ -365,4 +359,199 @@ total 1.5G
 /tmp/bkenna/130860/HG00335-Alignment:
 total 0
 
+Done|26
+Locked|4
+
 '''
+
+
+#####################################################
+#####################################################
+## 
+## 3). Test TaskTide DedupBQSR
+##
+## -> How would config validator look?
+## -> Configure log dirs 
+## -> Allo
+## 
+#####################################################
+#####################################################
+
+
+# Summarize State
+echo "SELECT State, COUNT(DISTINCT Id) as 'N Tasks' FROM Items GROUP BY State;" | sqlite3 $ITEMSTORE_SQL/WORKITEM/master
+
+
+# Fetch done
+rm -f $SAMPLE_META_DATA/bams.txt
+touch $SAMPLE_META_DATA/bams.txt
+for cram in $(tree -fish $BAM | grep "cram$" | grep -v "30K" | cut -d " " -f 3)
+do
+  if [ -f $cram.crai ]
+  then
+    base=$(basename $cram)
+    id=$(echo $base | cut -d \. -f 1)
+    echo -e "$id\t$base\t$cram" >> $SAMPLE_META_DATA/bams.txt
+  fi
+done
+
+
+# Import data manifest
+sqlite3 $SAMPLE_META_DATA/sample-meta-data.db <<EOF
+CREATE TABLE IF NOT EXISTS BAM (
+  IID TEXT,
+  BASE TEXT,
+  CRAM TEXT
+);
+
+.mode tabs
+.separator "\t"
+.import $SAMPLE_META_DATA/bams.txt BAM
+SELECT * FROM BAM ORDER BY RANDOM() LIMIT 10;
+
+EOF
+
+
+# Annotate sample tracker
+sqlite3 $SAMPLE_META_DATA/sample-meta-data.db <<EOF
+
+-- Annotate Aligned Samples
+UPDATE SampleTracking
+  SET RealignedCram = (
+    SELECT CRAM
+      FROM BAM
+      WHERE
+        BAM.IID = SampleTracking.SampleId
+  )
+;
+
+EOF
+
+
+# Configure the queue for the next step
+sqlite3 $SAMPLE_META_DATA/sample-meta-data.db <<EOF
+
+-- Clear Previous Run
+DROP TABLE IF EXISTS DedupQueue;
+
+
+-- Create queue
+CREATE TABLE IF NOT EXISTS DedupQueue (
+    WorkItemId TEXT,
+    TaskScript TEXT
+);
+
+
+-- Insert Records
+INSERT INTO DedupQueue
+    SELECT
+        CONCAT(SampleId, '-Dedup') AS 'WorkItemId',
+        CONCAT(
+            'bash /home/people/bkenna/software/bin/alignment-scripts/Dedup-BQSR.sh ',
+            CONCAT(
+                SampleId,
+                CONCAT(
+                    ' ',
+                    RealignedCram
+                )
+            )
+        ) AS 'Task'
+    FROM
+        SampleTracking 
+    WHERE
+        RealignedCram IS NOT NULL
+    ORDER BY
+        RANDOM()
+;
+
+EOF
+
+
+# Fetch first two for testing
+cd $TASK_TIDE
+echo -e "SELECT * FROM DedupQueue ORDER BY RANDOM() LIMIT 10;" | sqlite3 $SAMPLE_META_DATA/sample-meta-data.db > $SOFT/opt/java/tasktide-0.9.0/config/dedup-test-tasks.txt
+wc -l $JAVA_MODULES/tasktide-0.9.0/config/dedup-test-tasks.txt
+
+''' --> Just for reference
+HG00701-Dedup|bash /home/people/bkenna/software/bin/alignment-scripts/Dedup-BQSR.sh HG00701 
+HG01383-Dedup|bash /home/people/bkenna/software/bin/alignment-scripts/Dedup-BQSR.sh HG01383
+
+10 /home/people/bkenna/software/opt/java/tasktide-0.9.0/config/dedup-test-tasks.txt
+
+
+
+DELETE FROM Items
+WHERE Id IN (
+  'WorkItem-4e89f4c8-22c2-4f86-abe4-bacf2c7ca0e3',
+  'WorkItem-8b71c9bf-0dd8-4401-8a9d-614b9c6479b3',
+  'WorkItem-f55fd47c-7f1e-4bee-b16d-79d6ca17a544',
+  'WorkItem-ee0bcb2a-e509-4652-b95f-901a3a17b47c',
+  'WorkItem-729d6543-a706-443f-b0e5-3a0dac29acb7',
+  'WorkItem-dc033020-284a-433e-8017-f38ba9042f60',
+  'WorkItem-2efa1db7-c092-4a63-8422-662f2abec9e0',
+  'WorkItem-59b0b505-b937-4908-a22a-0eb01fd143ab'
+);
+
+'''
+
+
+# Import tasks
+cd $TASK_TIDE
+sed -i 's/tasktide.client=engine/tasktide.client=manager/' $TASK_TIDE_CONF
+sed -i 's/tasktide.engine.step=Alignment/tasktide.engine.step=DedupBQSR/' $TASK_TIDE_CONF
+sed -i 's/tasktide.manager.targetStep=Alignment/tasktide.manager.targetStep=DedupBQSR/' $TASK_TIDE_CONF
+sed -i 's/tasktide.manager.inputFile=alignment.txt/tasktide.manager.inputFile=dedup-test-tasks.txt/g' $TASK_TIDE_CONF
+
+tasktide
+
+
+# Run engine
+sed -i 's/tasktide.client=manager/tasktide.client=engine/' $TASK_TIDE_CONF
+
+tasktide
+
+
+# Run job: 131416
+sbatch \
+    --job-name="TaskTide-DedupBQSR-Test" \
+    --array="1-10%3" \
+    -t 72:00:00 -n 1 -c 9 \
+    --output=$TASK_TIDE/logs/DedupBQSR-%a.log --error=$TASK_TIDE/logs/DedupBQSR-%a.log \
+    $SOFT/bin/job-runner-task-tide.sh
+
+
+# Check in on jobs: Index Step for ItemStore
+sacct -j 131487
+squeue -j 131487
+
+echo -e "SELECT Payload FROM Items;" | sqlite3 $ITEMSTORE_SQL/WORKITEM/master | \
+    jq -s '[ .[] | {id: .Id, "ItemState": ."ItemState"} ]'
+
+echo -e "SELECT Payload FROM Items;" | sqlite3 $ITEMSTORE_SQL/WORKITEM/master | \
+    jq -s '[ .[].Workload.Workload[]| {id: .id, "Task State": ."Task State"} ]'
+
+echo "SELECT Id, State FROM Items WHERE State != 'ToDo';" | sqlite3 $ITEMSTORE_SQL/WORKITEM/master
+
+echo "SELECT State, COUNT(DISTINCT Id) as 'N Tasks' FROM Items GROUP BY State;" | sqlite3 $ITEMSTORE_SQL/WORKITEM/master
+
+
+
+# Sanity check script
+coords=chr21:31659666-31668931
+test=$BAM/HG01187/HG01187.sorted.cram
+SM=HG01187
+
+cd $BAM/HG01187/
+rm -f HG01187.bqsr.log HG01187-Dedup.log HG01187.dedupMetrics.txt HG01187.dedup-sorted.bam HG01187.dedup-sorted.bam.bai
+
+samtools view -T $b38_REF -hC $test $coords > $BAM/$SM/$SM.cram
+samtools index $BAM/$SM/$SM.cram
+
+
+bash $SOFT/bin/alignment-scripts/Dedup-BQSR.sh $SM $BAM/$SM/$SM.cram
+
+
+bash $SOFT/bin/alignment-scripts/VariantCalling.sh HG01187 /scratch/bkenna/bam/HG01187/HG01187.final-gatk.cram
+
+
+
