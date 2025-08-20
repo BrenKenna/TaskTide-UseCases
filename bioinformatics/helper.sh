@@ -10,6 +10,10 @@
 ###################################################################################
 
 
+. ~/interactive.sh
+. ~/start.sh
+
+
 #####################################################
 #####################################################
 ## 
@@ -20,10 +24,12 @@
 
 
 # TaskTide
-rm -f $SOFT/bin/tasktide
 cd $JAVA_MODULES
-wget https://github.com/BrenKenna/TaskTide/releases/download/v0.9.0/tasktide-0.9.0.zip
-tar -xvzf tasktide-0.9.0.zip
+mv ~/tasktide-0.9.0.zip ./
+# wget https://github.com/BrenKenna/TaskTide/releases/download/v0.9.0/tasktide-0.9.0.zip
+rm -fr tasktide-0.9.0
+unzip tasktide-0.9.0.zip && cd tasktide-0.9.0
+rm -f $SOFT/bin/tasktide
 ln -sf $JAVA_MODULES/tasktide-0.9.0/bin/tasktide $SOFT/bin/tasktide
 
 mkdir jnosql
@@ -594,10 +600,11 @@ echo -e "SELECT * FROM AlignmentQueue ORDER BY RANDOM() LIMIT 10;" | sqlite3 $sa
 tasktide \
   --client manager \
   --repository-type "sqlite" \
-  --inputFile $JAVA_MODULES/tasktide-0.9.0/config/test-imports.txt \
-  --target-step SequenceAlignment \
+  --target-file $JAVA_MODULES/tasktide-0.9.0/config/test-imports.txt \
+  --step-name SequenceAlignment \
   --delimiter '|' \
-  --method "input"
+  --method "import"
+
 
 
 # Only sees to import?
@@ -606,7 +613,7 @@ tasktide \
   --repository-type "sqlite" \
   --method export \
   --output-file $JAVA_MODULES/tasktide-0.9.0/config/test-exports.txt \
-  --target-step SequenceAlignment
+  --step-name SequenceAlignment
 
 
 
