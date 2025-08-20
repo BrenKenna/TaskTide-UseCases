@@ -77,7 +77,7 @@ fi
 echo -e "\\n\\nCalculating recalibration model\\n"
 BQSR_Loci=$(echo -L chr{1..22} | sed 's/ / -L /g' | sed 's/-L -L/-L/g')
 time java -Djava.io.tmpdir=$wrk -jar $GATK \
-    BaseRecalibrator --downsample_to_fraction 0.1 -R $b38_REF \
+    BaseRecalibrator -R $b38_REF \
     -I $BAM/$SM/$SM.dedup-sorted.bam -o $BAM/$SM/$SM.recal \
     $BQSR_Loci \
     -knownSites $dbSNP \
