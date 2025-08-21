@@ -44,6 +44,8 @@ mv lib/jnosql-mapping-graph-1.1.8.jar jnosql/
 mv lib/jnosql-mapping-key-value-1.1.8.jar jnosql/
 mv lib/jnosql-mapping-column-1.1.8.jar jnosql/
 
+cp $TASK_TIDE/microprofile-config.properties $TASK_TIDE_CONF
+
 
 #####################################################
 #####################################################
@@ -594,14 +596,16 @@ taskDB=$TASK_TIDE/itemStore/client-args
 
 
 # Run engine vs manager client
-echo -e "SELECT * FROM AlignmentQueue ORDER BY RANDOM() LIMIT 10;" | sqlite3 $sampleDB > $JAVA_MODULES/tasktide-0.9.0/config/test-imports.txt
+cd $TASK_TIDE
+echo -e "SELECT * FROM AlignmentQueue ORDER BY RANDOM() LIMIT 13;" | sqlite3 $sampleDB > $TASK_TIDE/test-imports.txt
 
 
 tasktide \
-  --client manager \
+  manager \
   --repository-type "sqlite" \
-  --target-file $JAVA_MODULES/tasktide-0.9.0/config/test-imports.txt \
+  --file-path $taskDB \
   --step-name SequenceAlignment \
+  --target-file $TASK_TIDE/test-imports.txt \
   --delimiter '|' \
   --method "import"
 
@@ -619,8 +623,87 @@ tasktide \
 
 # Run engine
 tasktide \
-  --client engine \
+  engine \
   --repository-type "sqlite" \
-  --step SequenceAlignment
+  --file-path $taskDB \
+  --step-name SequenceAlignment
 
 
+
+
+# Scoping DB
+echo -e "SELECT Id, State, Step FROM Items LIMIT 3;" | sqlite3 $taskDB/WORKITEM/master
+
+'''
+WorkItem-7dbdabb1-1344-476b-8021-cc02b035d9fa|ToDo|SequenceAlignment
+WorkItem-42963db2-1021-4acc-8b10-c33308ec1f21|ToDo|SequenceAlignment
+WorkItem-40c5f03d-d21f-442a-b356-70a70420996c|ToDo|SequenceAlignment
+
+WorkItem-9674ab7d-0f76-40e8-97f3-e37a17275a09|Locked|SequenceAlignment
+'''
+
+
+# Restart
+tasktide \
+  manager \
+  --repository-type "sqlite" \
+  --file-path "$taskDB" \
+  --step-name "SequenceAlignment" \
+  --method "Reset_Item" \
+  --itemId "WorkItem-9674ab7d-0f76-40e8-97f3-e37a17275a09"
+
+echo -e "SELECT Id, State, Step FROM Items WHERE Id = 'WorkItem-9674ab7d-0f76-40e8-97f3-e37a17275a09';" | sqlite3 $taskDB/WORKITEM/master
+
+
+echo -e "SELECT Id FROM Items ORDER BY RANDOM() LIMIT 3;" | sqlite3 $taskDB/WORKITEM/master > $TASK_TIDE/reset-workitems.txt
+tasktide \
+  manager \
+  --repository-type "sqlite" \
+  --file-path "$taskDB" \
+  --step-name "SequenceAlignment" \
+  --method "Reset_Items" \
+  --delimiter "|" \
+  --target-file $TASK_TIDE/reset-workitems.txt \
+
+
+
+'''
+WorkItem-9674ab7d-0f76-40e8-97f3-e37a17275a09|ToDo|SequenceAlignment
+
+'''
+
+
+
+# Importing task
+tasktide \
+  manager \
+  --repository-type "sqlite" \
+  --file-path "$taskDB" \
+  --step-name "Dedup" \
+  --method "Add" \
+  --import-string '{ "Task Name": "NA11892-Dedup", "Task Script": "bash /home/people/bkenna/software/bin/alignment-scripts/Dedup-BQSR.sh NA11892 /scratch/bkenna/bam/NA11892/NA11892.sorted.cram" }'
+
+echo "SELECT Payload FROM Items WHERE Step = 'Step-7354b1fc-191b-4a50-aa88-041a4022e52d' LIMIT 1;" | \
+  sqlite3 $taskDB/WORKITEM/master | \
+  jq '{ Id: .Id, ItemName: .ItemName}'
+
+'''
+
+2|Step-7354b1fc-191b-4a50-aa88-041a4022e52d|PENDING|Workflow-303f6dbe-d687-4b14-9405-d593252bda44|{
+    "StepCount": 0,
+    "StepId": "Step-7354b1fc-191b-4a50-aa88-041a4022e52d",
+    "StepName": "Dedup",
+    "StepState": "PENDING",
+    "StepsDone": 0,
+    "StepsError": 0,
+    "StepsLocked": 0,
+    "StepsToDo": 0,
+    "WorkflowId": "Workflow-303f6dbe-d687-4b14-9405-d593252bda44",
+    "collection": "Workflow-303f6dbe-d687-4b14-9405-d593252bda44"
+}
+
+{
+  "Id": "WorkItem-7d9c02bc-07c9-4602-8fa8-32014ce491ad",
+  "ItemName": "NA11892-Dedup"
+}
+'''
