@@ -45,6 +45,7 @@ mv lib/jnosql-mapping-key-value-1.1.8.jar jnosql/
 mv lib/jnosql-mapping-column-1.1.8.jar jnosql/
 
 cp $TASK_TIDE/microprofile-config.properties $TASK_TIDE_CONF
+cd $TASK_TIDE
 
 
 #####################################################
@@ -613,12 +614,91 @@ tasktide \
 
 # Only sees to import?
 tasktide \
-  --client manager \
+  manager \
   --repository-type "sqlite" \
-  --method export \
-  --output-file $JAVA_MODULES/tasktide-0.9.0/config/test-exports.txt \
-  --step-name SequenceAlignment
+  --file-path $taskDB \
+  --method "export" \
+  --target "workItem" \
+  --target-file $TASK_TIDE/workitems.json
 
+wc workitems.json
+
+rm -fr $taskDB/WORKITEM/*
+tasktide \
+  manager \
+  --repository-type "sqlite" \
+  --file-path $taskDB \
+  --method "import" \
+  --target "workItem" \
+  --delimiter "json" \
+  --target-file $TASK_TIDE/workitems.json
+
+'''
+0   235 19047 workitems.json
+2025-08-21 16:48:00 INFO  [ main -> org.tasktide.tasktide.client.TaskTideManagerClient.importJson ]: Attempting to read JSON file:      '/scratch/bkenna/TaskTide/workitems.json'
+2025-08-21 16:48:00 INFO  [ main -> org.tasktide.tasktide.client.TaskTideManagerClient.importJson ]: Streaming JSON data into WorkItem list
+2025-08-21 16:48:00 INFO  [ main -> org.tasktide.tasktide.client.TaskTideManagerClient.importJson ]: Streamed JSON data into WorkItem list
+2025-08-21 16:48:00 INFO  [ main -> org.tasktide.tasktide.client.TaskTideManagerClient.handleImport ]: Importing '13' workitems
+2025-08-21 16:48:00 INFO  [ main -> org.tasktide.tasktide.client.TaskTideManagerClient.handleImport ]: Import status 'true'
+'''
+
+# Import single task
+tasktide \
+  manager \
+  --repository-type "sqlite" \
+  --file-path "$taskDB" \
+  --step-name "Dedup" \
+  --method "Add" \
+  --import-string '{ "Task Name": "NA11892-Dedup", "Task Script": "bash /home/people/bkenna/software/bin/alignment-scripts/Dedup-BQSR.sh NA11892 /scratch/bkenna/bam/NA11892/NA11892.sorted.cram" }'
+
+echo "SELECT Payload FROM Items WHERE Step = 'Step-7354b1fc-191b-4a50-aa88-041a4022e52d' LIMIT 1;" | \
+  sqlite3 $taskDB/WORKITEM/master | \
+  jq '{ Id: .Id, ItemName: .ItemName}'
+
+'''
+
+2|Step-7354b1fc-191b-4a50-aa88-041a4022e52d|PENDING|Workflow-303f6dbe-d687-4b14-9405-d593252bda44|{
+    "StepCount": 0,
+    "StepId": "Step-7354b1fc-191b-4a50-aa88-041a4022e52d",
+    "StepName": "Dedup",
+    "StepState": "PENDING",
+    "StepsDone": 0,
+    "StepsError": 0,
+    "StepsLocked": 0,
+    "StepsToDo": 0,
+    "WorkflowId": "Workflow-303f6dbe-d687-4b14-9405-d593252bda44",
+    "collection": "Workflow-303f6dbe-d687-4b14-9405-d593252bda44"
+}
+
+{
+  "Id": "WorkItem-7d9c02bc-07c9-4602-8fa8-32014ce491ad",
+  "ItemName": "NA11892-Dedup"
+}
+'''
+
+
+# Append to work item
+tasktide \
+  manager \
+  --repository-type "sqlite" \
+  --file-path $taskDB \
+  --method "Append" \
+  --import-string '{ "WorkItemId": "WorkItem-cf1ffbbe-4bc3-408f-81ed-139e029ce249", "Task Name": "NA11892-Dedup", "Task Script": "bash /home/people/bkenna/software/bin/alignment-scripts/Dedup-BQSR.sh NA11892 /scratch/bkenna/bam/NA11892/NA11892.sorted.cram" }'
+
+echo "SELECT Payload FROM Items WHERE Id = 'WorkItem-cf1ffbbe-4bc3-408f-81ed-139e029ce249';" | sqlite3 $taskDB/WORKITEM/master  | \
+  jq '{ItemName: .ItemName, Id:.Id, TaskCount: .TaskCount, TaskName: [.Workload.Workload[]."Task Name"]}'
+
+'''
+{
+  "ItemName": "NA11892-Alignment",
+  "Id": "WorkItem-cf1ffbbe-4bc3-408f-81ed-139e029ce249",
+  "TaskCount": 2,
+  "TaskName": [
+    "NA11892-Dedup",
+    "NA11892-Alignment"
+  ]
+}
+'''
 
 
 # Run engine
@@ -662,7 +742,6 @@ tasktide \
   --file-path "$taskDB" \
   --step-name "SequenceAlignment" \
   --method "Reset_Items" \
-  --delimiter "|" \
   --target-file $TASK_TIDE/reset-workitems.txt \
 
 
@@ -670,40 +749,4 @@ tasktide \
 '''
 WorkItem-9674ab7d-0f76-40e8-97f3-e37a17275a09|ToDo|SequenceAlignment
 
-'''
-
-
-
-# Importing task
-tasktide \
-  manager \
-  --repository-type "sqlite" \
-  --file-path "$taskDB" \
-  --step-name "Dedup" \
-  --method "Add" \
-  --import-string '{ "Task Name": "NA11892-Dedup", "Task Script": "bash /home/people/bkenna/software/bin/alignment-scripts/Dedup-BQSR.sh NA11892 /scratch/bkenna/bam/NA11892/NA11892.sorted.cram" }'
-
-echo "SELECT Payload FROM Items WHERE Step = 'Step-7354b1fc-191b-4a50-aa88-041a4022e52d' LIMIT 1;" | \
-  sqlite3 $taskDB/WORKITEM/master | \
-  jq '{ Id: .Id, ItemName: .ItemName}'
-
-'''
-
-2|Step-7354b1fc-191b-4a50-aa88-041a4022e52d|PENDING|Workflow-303f6dbe-d687-4b14-9405-d593252bda44|{
-    "StepCount": 0,
-    "StepId": "Step-7354b1fc-191b-4a50-aa88-041a4022e52d",
-    "StepName": "Dedup",
-    "StepState": "PENDING",
-    "StepsDone": 0,
-    "StepsError": 0,
-    "StepsLocked": 0,
-    "StepsToDo": 0,
-    "WorkflowId": "Workflow-303f6dbe-d687-4b14-9405-d593252bda44",
-    "collection": "Workflow-303f6dbe-d687-4b14-9405-d593252bda44"
-}
-
-{
-  "Id": "WorkItem-7d9c02bc-07c9-4602-8fa8-32014ce491ad",
-  "ItemName": "NA11892-Dedup"
-}
 '''
