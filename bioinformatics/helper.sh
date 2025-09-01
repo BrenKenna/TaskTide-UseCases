@@ -28,7 +28,7 @@ cd $JAVA_MODULES
 mv ~/tasktide-0.9.0.zip ./
 # wget https://github.com/BrenKenna/TaskTide/releases/download/v0.9.0/tasktide-0.9.0.zip
 rm -fr tasktide-0.9.0
-unzip tasktide-0.9.0.zip && cd tasktide-0.9.0
+unzip tasktide-0.9.0.zip && rm -f tasktide-0.9.0.zip && cd tasktide-0.9.0
 rm -f $SOFT/bin/tasktide
 ln -sf $JAVA_MODULES/tasktide-0.9.0/bin/tasktide $SOFT/bin/tasktide
 
@@ -742,7 +742,7 @@ tasktide \
   --file-path "$taskDB" \
   --step-name "SequenceAlignment" \
   --method "Reset_Items" \
-  --target-file $TASK_TIDE/reset-workitems.txt \
+  --target-file $TASK_TIDE/reset-workitems.txt
 
 
 
