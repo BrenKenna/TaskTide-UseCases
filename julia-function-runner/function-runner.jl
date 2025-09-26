@@ -1,0 +1,133 @@
+#!/usr/bin/env julia
+
+#=
+The purpose of this Julia script to demonstrate that
+ TaskTide is also usable as a function runner, across
+ different programming languages. Where output is sank
+ into an output file.
+
+Example Usage:
+    julia function-runner.jl --operation "BASE64_STRING" --output "result.txt" --serializeOutput
+=#
+using Serailization, Base64, ArgParse, Logging, LoggingExtras, Dates
+
+
+#=
+1). Configures Logging
+=#
+function logFormat(args, kwargs, msg)
+    level, _module, group, id, file, line = args
+    timestamp = Dates.format(Dates.now(), "yyyy-mm-dd HH:MM:SS")
+    return "$timestamp $(lpad(string(level), 5)) [$_module -> $group]: $msg"
+end
+logger = FileLogger("app.log") do io, args, kwards, msg
+    println(io, logformat(args, kwargs, msg))
+end
+global_logger(TeeLogger(ConsoleLogger(stderr), logger))
+
+
+#=
+2). Helper methods for argument parsing,
+     sinking data to file, and function inovocation
+=#
+
+# Defines and parses command-line arguments
+function parseArgs()
+
+    # Define arguments
+    @info 
+    parser = ArgParseSettings()
+    @add_arg_table parser begin
+        "--operation"
+            help = "Base64 encoded serailized Julia function"
+            arg_type = String
+        "--output"
+            help = "File to write function result"
+            arg_type = String
+        "--serializeOutput"
+            help = "Flag for whether output should be serialized"
+            action = :store_false
+    end
+
+    # Parse and return
+    args = parse_args(parser)
+    return args
+end
+
+
+# Sinks argument to provided file
+function sinkToFile(data, file)
+    open(file, "w") do io
+        println(io, data)
+    end
+end
+
+
+# Invoke function 
+function invokeFunc(func)
+    result = func()
+    return result
+end
+
+
+#=
+3). Base64 byte array Serde
+=#
+
+# Deserialize parameter base64 encoded byte array 
+function deserialize(operation)
+    bytes = base64decode(operation)
+    ioBuff = IOBuffer(bytes)
+    func = deserialize(ioBuff)
+    return func
+end
+
+
+# Serailize argument to base64 encoded byte array
+function serializeToBase64(param)
+    ioBuff = IOBuffer()
+    serialize(ioBuff, param)
+    return base64encode(take!(ioBuff))
+end
+
+
+#=
+4). Running as program
+=#
+
+# Entrypoint method
+function main()
+
+    # Parse arguments
+    @info "Parsing command-line arguments" _module="function-runner.jl" group="function-runner.main"
+    args = parseArgs()
+
+    # Deserialize and run
+    @info "Deserializing & invoking function" _module="function-runner.jl" group="function-runner.main"
+    func = deserialize(args["operation"])
+    result = invokeFunc(func)
+
+    # Handles output serialization
+    @info "Determining whether to serialize results" _module="function-runner.jl" group="function-runner.main"
+    if args["serializeOutput"]
+        @info "Serializing results to base64 encode byte array" _module="function-runner.jl" group="function-runner.main"
+        result = serializeToBase64(result)
+    end
+
+    # Determine where to put results
+    targetFile = args["output"]
+    @info "Determing where to direct results" _module="function-runner.jl" group="function-runner.main"
+    if isnothing(targetFile)
+        @info "No target file provided, returning result" _module="function-runner.jl" group="function-runner.main"
+        return result
+    else
+        @info "Sinking results to file '$targetFile'" _module="function-runner.jl" group="function-runner.main"
+        sinkToFile(result, targetFile)
+    end
+end
+
+
+# Launch program, also allowing import
+if abspath(PROGRAM_FILE) == @__FILE__
+    main()
+end
