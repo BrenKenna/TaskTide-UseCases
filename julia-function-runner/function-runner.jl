@@ -7,9 +7,17 @@ The purpose of this Julia script to demonstrate that
  into an output file.
 
 Example Usage:
-    julia function-runner.jl --operation "BASE64_STRING" --output "result.txt" --serializeOutput
+    julia \
+        function-runner.jl \
+        --operation "BASE64_BYTE" \
+        --parameters "BASE64_BYTE" \
+        --packageUrl "http/s3/gsiftp://some/path/myTar.gz \
+        --output "result.txt" \
+        --serializeOutput
 =#
-using Serailization, Base64, ArgParse, Logging, LoggingExtras, Dates
+using ArgParse, Serialization,
+    Base64, Logging, LoggingExtras,
+    Dates, Downloads, Tar
 
 
 #=
@@ -20,8 +28,8 @@ function logFormat(args, kwargs, msg)
     timestamp = Dates.format(Dates.now(), "yyyy-mm-dd HH:MM:SS")
     return "$timestamp $(lpad(string(level), 5)) [$_module -> $group]: $msg"
 end
-logger = FileLogger("app.log") do io, args, kwards, msg
-    println(io, logformat(args, kwargs, msg))
+logger = FileLogger("app.log") do io, args, kwargs, msg
+    println(io, logFormat(args, kwargs, msg))
 end
 global_logger(TeeLogger(ConsoleLogger(stderr), logger))
 
@@ -35,23 +43,34 @@ global_logger(TeeLogger(ConsoleLogger(stderr), logger))
 function parseArgs()
 
     # Define arguments
-    @info 
     parser = ArgParseSettings()
     @add_arg_table parser begin
         "--operation"
             help = "Base64 encoded serailized Julia function"
             arg_type = String
+            required = true
+
+        "--parameters"
+            help = "Base64 encoded serialized function params"
+            arg_type = String
+            required = false
+
+        "--dependancies"
+            help = "Add package dependancies, downloading and unpacking tar archive if contains '://'"
+            arg_type = String
+            required = false
+
         "--output"
             help = "File to write function result"
             arg_type = String
+
         "--serializeOutput"
             help = "Flag for whether output should be serialized"
             action = :store_false
     end
 
     # Parse and return
-    args = parse_args(parser)
-    return args
+    return parse_args(parser)
 end
 
 
@@ -64,9 +83,8 @@ end
 
 
 # Invoke function 
-function invokeFunc(func)
-    result = func()
-    return result
+function invokeFunction(func, args::Tuple = ())
+    return func(args...)
 end
 
 
@@ -74,12 +92,21 @@ end
 3). Base64 byte array Serde
 =#
 
-# Deserialize parameter base64 encoded byte array 
-function deserialize(operation)
+# Deserialize function base64 encoded byte array 
+function deserializeFunction(operation)
     bytes = base64decode(operation)
     ioBuff = IOBuffer(bytes)
-    func = deserialize(ioBuff)
-    return func
+    return deserialize(ioBuff)
+end
+
+# Deserialize parameter base64 encoded byte array to tuple
+function deserializeFunctionParams(params::Union{Nothing, String})
+    if isnothing(params)
+        return ()
+    end
+    bytes = base64decode(params)
+    ioBuff = IOBuffer(bytes)
+    return deserialize(ioBuff)
 end
 
 
@@ -92,7 +119,34 @@ end
 
 
 #=
-4). Running as program
+4). Fetch program dependancies
+=#
+function addPathToEnv()
+    @info "Package path added to LOAD_PATH:\t'$(pwd())'" _module="function-runner.jl" group="function-runner.addPathToEnv"
+    push!(LOAD_PATH, pwd())
+end
+
+function fetchUrl(url)
+    # Fetch url
+    @info "Downloading function dependency:\t'$url'" _module="function-runner.jl" group="function-runner.fetchFromUrl"
+    base = basename(url)
+    Downloads.download(url, base)
+    
+    # Unpack
+    @info "Unpacking '$base'" _module="function-runner.jl" group="function-runner.fetchFromUrl"
+    Tar.extract(base, pwd())
+end
+
+function handleEnvArg(envPath)
+    if occursin("://", envPath)
+        fetchUrl(url)
+    end
+    addPathToEnv()
+end
+
+
+#=
+5). Running as program
 =#
 
 # Entrypoint method
@@ -102,10 +156,23 @@ function main()
     @info "Parsing command-line arguments" _module="function-runner.jl" group="function-runner.main"
     args = parseArgs()
 
-    # Deserialize and run
+    # Configure dependancies if supplied
+    if args["packageUrl"]
+        @info "Fetching function depenancies" _module="function-runner.jl" group="function-runner.main"
+        handleEnvArg(args["packageUrl"])
+    end
+
+    # Deserialize
     @info "Deserializing & invoking function" _module="function-runner.jl" group="function-runner.main"
-    func = deserialize(args["operation"])
-    result = invokeFunc(func)
+    func = deserializeFunction(args["operation"])
+    if args["parameters"]
+        @info "Deserializing function parameters" _module="function-runner.jl" group="function-runner.main"
+        params = deserializeFunctionParams(args["parameters"])
+        result = invokeFunction(func, params)
+    else
+        @info "Invoking function with no parameters" _module="function-runner.jl" group="function-runner.main"
+        result = invokeFunction(func)
+    end
 
     # Handles output serialization
     @info "Determining whether to serialize results" _module="function-runner.jl" group="function-runner.main"
@@ -119,6 +186,9 @@ function main()
     @info "Determing where to direct results" _module="function-runner.jl" group="function-runner.main"
     if isnothing(targetFile)
         @info "No target file provided, returning result" _module="function-runner.jl" group="function-runner.main"
+        @info "--- BEGIN OUTPUT ---" _module="function-runner.jl" group="function-runner.main"
+        println()
+        @info "--- END OUTPUT ---" _module="function-runner.jl" group="function-runner.main"
         return result
     else
         @info "Sinking results to file '$targetFile'" _module="function-runner.jl" group="function-runner.main"
