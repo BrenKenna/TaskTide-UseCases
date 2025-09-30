@@ -1,0 +1,67 @@
+{
+    "entity_index": {
+        "fields": [
+            "@entity"
+        ]
+    },
+
+    "workItemStepIdIndex": {
+        "fields": [
+            "@entity",
+            "StepId"
+        ]
+    },
+
+    "workItemStepNameIndex": {
+        "fields": [
+            "@entity",
+            "StepName"
+        ]
+    },
+
+    "workItemStateIndex": {
+        "fields": [
+            "@entity",
+            "ItemState"
+        ]
+    },
+
+    "workItemStepNameStateIndex": {
+        "fields": [
+            "@entity",
+            "StepName",
+            "ItemState"
+        ]
+    },
+
+    "workItemStepIdStateIndex": {
+        "fields": [
+            "@entity",
+            "StepId",
+            "ItemState"
+        ]
+    },
+
+    "entityJobEnvIndex": {
+        "fields": [
+            "@entity",
+            "JobEnvironment"
+        ]
+    },
+
+    "stepNameJobEnvIndex": {
+        "fields": [
+            "@entity",
+            "StepName",
+            "JobEnvironment"
+        ]
+    },
+
+    "stepIdJobEnvIndex": {
+        "fields": [
+            "@entity",
+            "StepId",
+            "JobEnvironment"
+        ]
+    }
+}
