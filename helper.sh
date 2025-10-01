@@ -217,6 +217,7 @@ echo -e "SELECT Payload FROM Items;" | sqlite3 itemStoreRepo/sqlite/WORKITEM/mas
   --file-path "./itemStoreRepo/sqlite" \
   --method "Summarize" \
   --target "WORKITEM" \
+  --target-file "./summaries.json" \
   --step-name "PingTest"
 
 ./bin/tasktide \
@@ -315,6 +316,144 @@ echo -e "SELECT Payload FROM Items WHERE Id = 'WorkItem-fa90ffc3-bd8d-46ab-9160-
   --import-string '{"Parameter": "State", "Value": "ToDo"}' \
   --target-file "./todo-items.json"
 
+
+
+
+##################################
+##################################
+##
+## Engine
+##
+## - Wait time between polling
+##
+##################################
+##################################
+
+
+# Run batch mdoe
+./bin/tasktide \
+  engine \
+  --repository-type "sqlite" \
+  --file-path "./itemStoreRepo/sqlite" \
+  --execution-policy "batch" \
+  --step-name "PingTest"
+
+echo -e "SELECT Payload FROM Items;" | \
+  sqlite3 itemStoreRepo/sqlite/WORKITEM/master | \
+  jq '{
+    Id: .Id,
+    State: .ItemState,
+    TaskMap: (
+      .Workload.TaskMap 
+      | to_entries 
+      | map({
+          Id: .value.id,
+          TaskName: .key,
+          ExitCode: .value["Task Log"]["Exit Code"],
+          ProcessId: .value["Task Log"]["Process Id"],
+          TaskState: .value["Task Log"]["Task State"],
+          ThreadName: .value["Task Log"]["Thread Name"]
+        })
+    )
+}'
+echo -e "SELECT Id, State, Collection FROM Items;" | sqlite3 itemStoreRepo/sqlite/WORKITEM/master
+
+''' -> Ping tasks never complete on linux, perfect for testing for killing of process Id
+
+
+2025-10-01 14:46:04 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchWorkload ]: No pilot label provided, processing all tasks 
+2025-10-01 14:46:04 WARN  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Warning, no ToDo tasks available for processing. Query below backend for more information
+
+WorkItem-eda870fa-5004-419b-809c-d525c39497c5|Error|PingTest
+WorkItem-e7e03523-5633-40e6-9753-bf986c8ce45d|Error|PingTest
+
+[
+  {
+    "Id": "WorkItem-eda870fa-5004-419b-809c-d525c39497c5",
+    "State": "ERROR",
+    "TaskMap": [
+      {
+        "Id": "ItemTask-fc072e8a-c08c-43db-98e9-f38ab3e980f1",
+        "TaskName": "Ping_Test_3",
+        "ExitCode": 143,
+        "ProcessId": 3508,
+        "TaskState": null,
+        "ThreadName": "pool-3-thread-1"
+      }
+    ]
+  },
+  {
+    "Id": "WorkItem-e7e03523-5633-40e6-9753-bf986c8ce45d",
+    "State": "ERROR",
+    "TaskMap": [
+      {
+        "Id": "ItemTask-a4041386-dd95-41b8-b08a-47d8f4fa0efa",
+        "TaskName": "Ping_Test_4",
+        "ExitCode": 143,
+        "ProcessId": 3522,
+        "TaskState": null,
+        "ThreadName": "pool-3-thread-1"
+      }
+    ]
+  }
+]
+
+'''
+
+
+# Run service
+./bin/tasktide \
+  engine \
+  --repository-type "sqlite" \
+  --file-path "./itemStoreRepo/sqlite" \
+  --execution-policy "service" \
+  --step-name "PingTest"
+
+
+# Import tasks
+./bin/tasktide \
+  manager \
+  --repository-type "sqlite" \
+  --file-path "./itemStoreRepo/sqlite" \
+  --method "Import" \
+  --delimiter "|" \
+  --target "WORKITEM" \
+  --step-name "PingTest" \
+  --target-file "../../../tasktide/tasktide/src/test/resources/singleTaskImports.txt"
+
+''' --> Separate instance for importing ran fine, and new tasks picked up engine
+
+2025-10-01 14:59:50 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Processing complete for step:      'PingTest'
+2025-10-01 14:59:58 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Determing how to process workload
+2025-10-01 14:59:58 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Processing single step:    'PingTest'
+2025-10-01 14:59:58 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchWorkload ]: No pilot label provided, processing all tasks
+2025-10-01 14:59:58 WARN  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Warning, no ToDo tasks available for processing. Query below backend for more information
+
+{Collection Name=WorkItem-Service, Model Class=WorkItem, Repository Type=Item Store}
+
+
+2025-10-01 14:59:58 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Processing complete for step:      'PingTest'
+2025-10-01 15:00:03 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Determing how to process workload
+2025-10-01 15:00:03 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Processing single step:    'PingTest'
+2025-10-01 15:00:03 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchWorkload ]: No pilot label provided, processing all tasks
+2025-10-01 15:00:03 WARN  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Warning, no ToDo tasks available for processing. Query below backend for more information
+
+{Collection Name=WorkItem-Service, Model Class=WorkItem, Repository Type=Item Store}
+
+2025-10-01 15:00:45 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Processing complete for step:      'PingTest'
+2025-10-01 15:00:50 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Determing how to process workload
+2025-10-01 15:00:50 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Processing single step:    'PingTest'
+2025-10-01 15:00:50 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchWorkload ]: No pilot label provided, processing all tasks
+2025-10-01 15:00:50 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Processing workload of size:   '4'
+2025-10-01 15:00:50 INFO  [ main -> org.tasktide.engine.EngineUtility.waitOnExecutorTrackerWorkItem ]: Begining state monitoring of ExecutorServiceTracker:     N tasks = '0'
+2025-10-01 15:00:50 INFO  [ main -> org.tasktide.engine.EngineUtility.waitOnExecutorTrackerWorkItem ]: Letting '10000'ms elapse for state monitoring of ExecutorServiceTracker:  '{}'
+2025-10-01 15:00:59 INFO  [ main -> org.tasktide.engine.EngineUtility.waitOnExecutorTrackerWorkItem ]: Displaying Iter-'0' StateSummary of ExecutorServiceTracker:
+
+Total='0', Remaining='0', Done='0', Expected='4'
+2025-10-01 15:00:59 INFO  [ main -> org.tasktide.engine.EngineUtility.waitOnExecutorTrackerWorkItem ]: Letting '10000'ms elapse for state monitoring of ExecutorServiceTracker:  '{}'
+
+
+'''
 
 
 #############################################################
