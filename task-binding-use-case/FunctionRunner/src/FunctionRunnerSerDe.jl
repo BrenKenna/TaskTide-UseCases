@@ -51,13 +51,18 @@ end
 
 """
 `
-invokeFunction(func::function, args::Tuple{Vararg{Any}}) -> Any
+invokeFunction(func::function, args::Tuple{Vararg{Any}}; ParseTo::Type=Nothing) -> Any
 
-Invokes function returing results
+Invokes function returing results. Optionally providing the data type
+  to parse the splattened arguments to.
 `
 """
-function invokeFunction(func, args)
-    return func(args...)
+function invokeFunction(func, args; ParseTo::Type=Nothing)
+    if ParseTo === Nothing
+        return func(args...)
+    else
+        return func(args...; ParseToType=ParseTo)
+    end
 end
 
 # Close module

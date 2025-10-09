@@ -13,7 +13,7 @@ Exports:
 """
 module FunctionRunnerUtils
 
-using JSON, Random, Printf
+using JSON, Random, Printf, Dates
 
 include("./FunctionRunnerSerDe.jl")
 using .FunctionRunnerSerDe
@@ -103,14 +103,14 @@ function makeTaskDict(
     # Configure task
     label= "$taskName-$counter"
     encParam = SerDe.serializeToBase64(join(param, " "))
-    task = "$PACKAGE_DIR/FunctionRunner.jl --operation=$encFunc --parameters=$encParam --output=$taskDir/$label.txt"
+    task = """bash -c 'set -ex; julia --debug "$PACKAGE_DIR/FunctionRunner.jl" --operation="$encFunc" --parameters="$encParam" --output="$taskDir/results/$label.txt" ' """
 
     # Represent as an object
     taskDict = Dict(
-        "task_name" => taskName,
-        "step_name" => stepName,
-        "annotation" => annotation,
-        "task" => task
+        "Task Name" => taskName,
+        "Step Name" => stepName,
+        "Annotations" => annotation,
+        "Task Script" => task
     )
     return taskDict
 end
@@ -131,6 +131,41 @@ function writeJson(taskName, taskCollection, taskDir)
     println("Tasks written to:\t'$outFile'")
 end
 
+
+"""
+`
+sinkToFile(data::String, file::String)
+`
+
+Sinks argument to provided file
+"""
+function sinkToFile(data, file)
+
+    # Create directory
+    dir = dirname(file)
+    if !isempty(dir) && !isdir(dir)
+        mkpath(dir)
+    end
+
+    # Write file
+    open(file, "w") do io
+        println(io, data)
+    end
+end
+
+
+"""
+`
+formatLogMessage(msg, level, __module, __method)
+`
+
+Formats log message as '< TIME > < LEVEL > [< CLASS > -> < METHOD >]:\\t< MSG >
+"""
+function formatLogMessage(msg, level, __module, __method)
+    timestamp = Dates.format(Dates.now(), "yyyy-mm-dd HH:MM:SS")
+    println("$timestamp $(uppercase(level))  [ $__module -> $__method ]: \t$msg")
+    flush(stdout)
+end
 
 # Close module
 end

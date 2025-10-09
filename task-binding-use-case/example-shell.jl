@@ -6,7 +6,7 @@ Julia script to demonstrate early-task binding use-case of
 """
 using Pkg
 Pkg.activate("./FunctionRunner")
-#Pkg.instantiate()
+# Pkg.instantiate()
 
 using JSON
 using CSV
@@ -20,19 +20,25 @@ using FunctionRunner
 
 # Set standard variables
 REPOSITORY_TYPE = "sqlite"
-WORKING_DIRECTORY = "./Early-Task-Binding"
+WORKING_DIRECTORY = "$(pwd())/Early-Task-Binding"
 REPOSITORY = "$WORKING_DIRECTORY/ItemStoreRepo/$REPOSITORY_TYPE"
 STEP_NAME = "FunctionRunner"
 TASK_DELIMITER = "JSON"
 
-mkpath(REPOSITORY)
-mkpath("$WORKING_DIRECTORY/results")
+# mkpath(REPOSITORY)
+# mkpath("$WORKING_DIRECTORY/results")
 cd(WORKING_DIRECTORY)
 
 
 # Setup tasks: function should also parse
 funcSrc = """
-    myFunc(x, y) = return x * y
+function mySerdeFunc(params...; ParseToType::Type=Int)
+    parsed = map(
+        elm -> parse(ParseToType, elm),
+        params
+    )
+    return prod(parsed)
+end
 """
 
 annotation = Dict(
@@ -46,17 +52,32 @@ FunctionRunner.Utils.writeTasksToJsonFile(
 
 
 # Sanity check operation
-ops = "N0pMGgQAAAA5ISAgICAgbXlGdW5jKHgsIHkpID0gcmV0dXJuIHggKiB5Cg=="
+ops = "N0pMHgQAAAA5IaJmdW5jdGlvbiBteVNlcmRlRnVuYyhwYXJhbXMuLi47IFBhcnNlVG9UeXBlOjpUeXBlPUludCkKICAgIHBhcnNlZCA9IG1hcCgKICAgICAgICBlbG0gLT4gcGFyc2UoUGFyc2VUb1R5cGUsIGVsbSksCiAgICAgICAgcGFyYW1zCiAgICApCiAgICByZXR1cm4gcHJvZChwYXJzZWQpCmVuZAo="
 remoteOps = FunctionRunner.SerDe.deserializeFunction(ops)
 methods(remoteOps)
+
+params = """N0pMHgQAAAAhBTEwIDE2"""
+params = FunctionRunner.SerDe.deserializeFunctionParams(params)
+
+FunctionRunner.SerDe.invokeFunction(remoteOps, params)
+FunctionRunner.SerDe.invokeFunction(remoteOps, ["3.14", "6"]; ParseTo = Float64)
+
 """
-# 1 method for generic function "myFunc" from FunctionRunner.FunctionRunnerSerDe:
- [1] myFunc(x, y)
+# 1 method for generic function "mySerdeFunc" from FunctionRunner.FunctionRunnerSerDe:
+ [1] mySerdeFunc(params...; ParseToType)
      @ none:1
+
+
+2-element Vector{SubString{String}}:
+ "6"
+ "10"
+
+60
+18.84
+
 """
 
-params = "N0pMGgQAAAAhBTEwIDEy"
-FunctionRunner.SerDe.deserializeFunctionParams(params)
+
 
 # Import tasks
 importCmd = `
@@ -68,14 +89,14 @@ importCmd = `
         --delimiter "$TASK_DELIMITER"
         --method "Import"
         --target "ManagerTask"
-        --target-file "$(pwd())/FunctionRunnerTasks.json"
+        --target-file "$(pwd())/Multiplication-tasks.json"
 `
 result = run(importCmd)
 
 
 # Query state
 summarizeCmd = `
-    tasktide.bat \
+    tasktide \
         manager \
           --repository-type "$REPOSITORY_TYPE" \
           --file-path "$REPOSITORY" \
@@ -83,11 +104,7 @@ summarizeCmd = `
           --method "Summarize" \
           --target "WORKITEM"
 `
-result = run(pipeline(
-      summarizeCmd,
-      stdout = stdout,
-      stderr = stderr
-))
+result = run(summarizeCmd)
 
 
 # Gather list of files

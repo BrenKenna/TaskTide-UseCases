@@ -1,6 +1,14 @@
 #!/bin/bash
 
 
+######################################################
+######################################################
+## 
+## 1). Manager Client
+## 
+######################################################
+######################################################
+
 # Import tasks
 ./bin/tasktide \
   manager \
@@ -156,4 +164,34 @@ echo -e "SELECT Payload FROM Items WHERE Id = 'WorkItem-fa90ffc3-bd8d-46ab-9160-
   --import-string '{"Parameter": "State", "Value": "ToDo"}' \
   --target-file "./todo-items.json"
 
+
+
+
+######################################################
+######################################################
+## 
+## 2). Engine Client
+## 
+######################################################
+######################################################
+
+
+# Run engine in batch mode
+tasktide \
+  engine \
+  --repository-type "sqlite" \
+  --file-path "./ItemStoreRepo/sqlite" \
+  --target "WORKITEM" \
+  --step-name "FunctionRunner"
+
+
+
+# Run engine as a service
+tasktide \
+  engine \
+  --repository-type "sqlite" \
+  --file-path "./ItemStoreRepo/sqlite" \
+  --target "WORKITEM" \
+  --step-name "FunctionRunner" \
+  --execution-policy "service"
 
