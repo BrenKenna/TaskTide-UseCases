@@ -13,20 +13,20 @@
 ./bin/tasktide \
   manager \
   --repository-type "sqlite" \
-  --file-path "./itemStoreRepo/sqlite" \
+  --file-path "./ItemStoreRepo/sqlite" \
   --method "Import" \
   --delimiter "|" \
   --target "WORKITEM" \
   --step-name "PingTest" \
   --target-file "../../../tasktide/tasktide/src/test/resources/singleTaskImports.txt"
 
-echo -e "SELECT Auto_Id, Id, State, Collection FROM Items;" | sqlite3 itemStoreRepo/sqlite/WORKITEM/master
+echo -e "SELECT Auto_Id, Id, State, Collection FROM Items;" | sqlite3 ItemStoreRepo/sqlite/WORKITEM/master
 echo -e "WorkItem-4597f006-85ec-490e-821a-c949d6c6e5cb\\nWorkItem-c145263c-0456-4abf-bf7d-ed89e12b9963" > forAnno.txt
 
 ./bin/tasktide \
   manager \
   --repository-type "sqlite" \
-  --file-path "./itemStoreRepo/sqlite" \
+  --file-path "./ItemStoreRepo/sqlite" \
   --method "Annotation" \
   --import-string '{"Pilot Label": "WSL Test"}' \
   --target "WORKITEM" \
@@ -34,7 +34,7 @@ echo -e "WorkItem-4597f006-85ec-490e-821a-c949d6c6e5cb\\nWorkItem-c145263c-0456-
   --target-file "./forAnno.txt"
 
 
-echo -e "SELECT Payload FROM Items;" | sqlite3 itemStoreRepo/sqlite/WORKITEM/master | \
+echo -e "SELECT Payload FROM Items;" | sqlite3 ItemStoreRepo/sqlite/WORKITEM/master | \
   jq '{ItemName: .ItemName, Id: .Id, Annotations: .annotations.Annotations."Pilot Label"}'
 
 '''
@@ -62,16 +62,16 @@ echo -e "SELECT Payload FROM Items;" | sqlite3 itemStoreRepo/sqlite/WORKITEM/mas
 ./bin/tasktide \
   manager \
   --repository-type "sqlite" \
-  --file-path "./itemStoreRepo/sqlite" \
+  --file-path "./ItemStoreRepo/sqlite" \
   --method "Summarize" \
   --target "WORKITEM" \
   --target-file "./summaries.json" \
-  --step-name "PingTest"
+  --step-name "FunctionRunner"
 
 ./bin/tasktide \
   manager \
   --repository-type "sqlite" \
-  --file-path "./itemStoreRepo/sqlite" \
+  --file-path "./ItemStoreRepo/sqlite" \
   --method "SUMMARIZE_EACH" \
   --target "WORKITEM" \
   --target-file "./summaries.json" \
@@ -88,7 +88,7 @@ echo -e "SELECT Payload FROM Items;" | sqlite3 itemStoreRepo/sqlite/WORKITEM/mas
 ./bin/tasktide \
   manager \
   --repository-type "sqlite" \
-  --file-path "./itemStoreRepo/sqlite" \
+  --file-path "./ItemStoreRepo/sqlite" \
   --method "DELETE" \
   --target "WORKITEM" \
   --step-name "PingTest"
@@ -99,14 +99,14 @@ echo -e "SELECT Payload FROM Items;" | sqlite3 itemStoreRepo/sqlite/WORKITEM/mas
 ./bin/tasktide \
   manager \
   --repository-type "sqlite" \
-  --file-path "./itemStoreRepo/sqlite" \
+  --file-path "./ItemStoreRepo/sqlite" \
   --target "WORKITEM" \
   --step-name "PingTest" \
   --method "Reset_Item" \
   --itemId "WorkItem-85dfcc13-d7a5-40a7-a028-1db4cfaf9774"
 
-echo -e "SELECT * FROM Items WHERE Id = 'WorkItem-85dfcc13-d7a5-40a7-a028-1db4cfaf9774';" | sqlite3 itemStoreRepo/sqlite/WORKITEM/master
-echo -e "SELECT * FROM Items WHERE Id = 'WorkItem-85dfcc13-d7a5-40a7-a028-1db4cfaf9774';" | sqlite3 itemStoreRepo/sqlite/WORKITEM/master
+echo -e "SELECT * FROM Items WHERE Id = 'WorkItem-85dfcc13-d7a5-40a7-a028-1db4cfaf9774';" | sqlite3 ItemStoreRepo/sqlite/WORKITEM/master
+echo -e "SELECT * FROM Items WHERE Id = 'WorkItem-85dfcc13-d7a5-40a7-a028-1db4cfaf9774';" | sqlite3 ItemStoreRepo/sqlite/WORKITEM/master
 
 '''
 5|WorkItem-85dfcc13-d7a5-40a7-a028-1db4cfaf9774|LOCKED|PingTest
@@ -119,7 +119,7 @@ echo -e "SELECT * FROM Items WHERE Id = 'WorkItem-85dfcc13-d7a5-40a7-a028-1db4cf
 ./bin/tasktide \
   manager \
   --repository-type "sqlite" \
-  --file-path "./itemStoreRepo/sqlite" \
+  --file-path "./ItemStoreRepo/sqlite" \
   --target "WORKITEM" \
   --step-name "PingTest" \
   --method "DELETE" \
@@ -128,13 +128,13 @@ echo -e "SELECT * FROM Items WHERE Id = 'WorkItem-85dfcc13-d7a5-40a7-a028-1db4cf
 ./bin/tasktide \
   manager \
   --repository-type "sqlite" \
-  --file-path "./itemStoreRepo/sqlite" \
+  --file-path "./ItemStoreRepo/sqlite" \
   --target "WORKITEM" \
   --step-name "PingTest" \
   --method "DELETE" \
   --import-string '{ "Item Id": "WorkItem-fa90ffc3-bd8d-46ab-9160-5f33970e4fa9" }'
 
-echo -e "SELECT Payload FROM Items WHERE Id = 'WorkItem-fa90ffc3-bd8d-46ab-9160-5f33970e4fa9';" | sqlite3 itemStoreRepo/sqlite/WORKITEM/master \
+echo -e "SELECT Payload FROM Items WHERE Id = 'WorkItem-fa90ffc3-bd8d-46ab-9160-5f33970e4fa9';" | sqlite3 ItemStoreRepo/sqlite/WORKITEM/master \
   | jq '{ Id: .Id, Workload: .Workload}'
 
 ''' 
@@ -157,7 +157,7 @@ echo -e "SELECT Payload FROM Items WHERE Id = 'WorkItem-fa90ffc3-bd8d-46ab-9160-
 ./bin/tasktide \
   manager \
   --repository-type "sqlite" \
-  --file-path "./itemStoreRepo/sqlite" \
+  --file-path "./ItemStoreRepo/sqlite" \
   --target "WORKITEM" \
   --step-name "PingTest" \
   --method "Export_Query" \
@@ -182,7 +182,8 @@ tasktide \
   --repository-type "sqlite" \
   --file-path "./ItemStoreRepo/sqlite" \
   --target "WORKITEM" \
-  --step-name "FunctionRunner"
+  --step-name "FunctionRunner" \
+  --work-item-threads 8
 
 
 
@@ -193,5 +194,6 @@ tasktide \
   --file-path "./ItemStoreRepo/sqlite" \
   --target "WORKITEM" \
   --step-name "FunctionRunner" \
-  --execution-policy "service"
+  --execution-policy "service" \
+  --work-item-threads 8
 

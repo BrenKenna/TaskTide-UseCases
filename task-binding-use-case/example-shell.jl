@@ -6,7 +6,7 @@ Julia script to demonstrate early-task binding use-case of
 """
 using Pkg
 Pkg.activate("./FunctionRunner")
-# Pkg.instantiate()
+#Pkg.instantiate()
 
 using JSON
 using CSV
@@ -20,13 +20,13 @@ using FunctionRunner
 
 # Set standard variables
 REPOSITORY_TYPE = "sqlite"
-WORKING_DIRECTORY = "$(pwd())/Early-Task-Binding"
+WORKING_DIRECTORY = "/home/bren/Early-Task-Binding"
 REPOSITORY = "$WORKING_DIRECTORY/ItemStoreRepo/$REPOSITORY_TYPE"
 STEP_NAME = "FunctionRunner"
 TASK_DELIMITER = "JSON"
 
-# mkpath(REPOSITORY)
-# mkpath("$WORKING_DIRECTORY/results")
+mkpath(REPOSITORY)
+mkpath("$WORKING_DIRECTORY/results")
 cd(WORKING_DIRECTORY)
 
 
@@ -44,7 +44,7 @@ end
 annotation = Dict(
     "Pilot Label" => "Function-Runner-Label"
 )
-params = FunctionRunner.Utils.randomNumbers(8, 3, 21)
+params = FunctionRunner.Utils.randomNumbers(30, 3, 21)
 FunctionRunner.Utils.writeTasksToJsonFile(
     pwd(), "Multiplication", STEP_NAME, 
     annotation, funcSrc, params
@@ -89,7 +89,7 @@ importCmd = `
         --delimiter "$TASK_DELIMITER"
         --method "Import"
         --target "ManagerTask"
-        --target-file "$(pwd())/Multiplication-tasks.json"
+        --target-file "/home/bren/Early-Task-Binding/Multiplication-tasks.json"
 `
 result = run(importCmd)
 
@@ -117,11 +117,22 @@ resultFiles = [
 
 # Aggregate into table
 results =  [
-    Dict(
-        "Results" => CSV.read(file, DataFrame) |> Tables.columntable
-    )
+    let result = parse(Float64, strip(read(file, String)))
+        rm(file)
+        Dict(
+            "Result" => result,
+            "File" => file
+        )
+    end
+    for file in resultFiles
 ]
 
 
 # Sink to file
-FunctionRunner.sinkToFile(results, "$WORKING_DIRECTORY/results.txt")
+FunctionRunner.Utils.writeJson("result", results, WORKING_DIRECTORY)
+sum( [ elm["Result"] for elm in results ] )
+
+"""
+Tasks written to:       '/home/bren/Early-Task-Binding/result-tasks.json'
+4780.0
+"""

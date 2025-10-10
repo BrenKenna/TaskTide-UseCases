@@ -27,14 +27,14 @@ Exports:
 """
 module FunctionRunner
 
-using ArgParse, Tar,
-    LoggingExtras, Downloads
-
-using Dates, Logging
-const FUNCTIONRUNNER_LOGGER = Ref{Union{AbstractLogger, Nothing}}(nothing)
+println("Importing Modules")
+flush(stdout)
 
 
 # Include utility and SerDe
+println("Importing FunctionRunner")
+flush(stdout)
+
 include("./FunctionRunnerUtils.jl")
 using .FunctionRunnerUtils
 const Utils = FunctionRunnerUtils
@@ -45,117 +45,15 @@ const SerDe = FunctionRunnerSerDe
 
 
 # Configure exports
-export handleEnvArg, Utils, SerDe
-
-#=
-2). Helper methods for argument parsing,
-     sinking data to file, and function inovocation
-=#
-
-"""
-`parseArgs() -> ArgParser`
-
-Defines and parses command-line arguments
-"""
-function parseArgs()
-
-    # Define arguments
-    parser = ArgParseSettings()
-    @add_arg_table parser begin
-        "--operation"
-            help = "Base64 encoded serailized Julia function"
-            arg_type = String
-            required = true
-
-        "--parameters"
-            help = "Base64 encoded serialized function params"
-            arg_type = String
-            required = false
-
-        "--dependancies"
-            help = "Add package dependancies, downloading and unpacking tar archive if contains '://'"
-            arg_type = String
-            required = false
-
-        "--output"
-            help = "File to write function result"
-            arg_type = String
-
-        "--serializeOutput"
-            help = "Flag for whether output should be serialized"
-            action = :store_true
-    end
-
-    # Parse and return
-    return parse_args(parser)
-end
-
-
-#=
-4). Fetch program dependancies
-=#
-
-"""
-`addPathToEnv(envPath::String)`
-
-Adds current directory to LOAD_PATH
-"""
-function addPathToEnv(envPath)
-    # @info "Package path added to LOAD_PATH:\t'$envPath'" _module="FunctionRunner.jl" group="FunctionRunner.addPathToEnv"
-    push!(LOAD_PATH, envPath)
-end
-
-
-"""
-`fetchUrl(url::String)`
-
-Download, and unpack archive from provided URL
-"""
-function fetchUrl(url)
-
-    # Fetch url
-    Utils.formatLogMessage(
-        "Downloading function dependency:\t'$url'",
-        "info",
-        "FunctionRunner.jl",
-        "FunctionRunner.fetchFromUrl"
-    )
-    # @info  _module="FunctionRunner.jl" group=
-    base = basename(url)
-    Downloads.download(url, base)
-    
-    # Unpack
-    Utils.formatLogMessage(
-        "Unpacking '$base'",
-        "info",
-        "FunctionRunner.jl",
-        "FunctionRunner.fetchFromUrl"
-    )
-    Tar.extract(base, pwd())
-end
-
-
-"""
-`handleEnvArg(envPath::String)`
-
-Handles adding provided environment path to LOAD_PATH.
- If envPath is tar balled URL, resource is downloaded
-   and current directory is added
-"""
-function handleEnvArg(envPath)
-    if occursin("://", envPath)
-        fetchUrl(envPath)
-        addPathToEnv(pwd())
-    end
-    addPathToEnv(envPath)
-end
+println("Configuring exports")
+flush(stdout)
+export Utils, SerDe
 
 
 # Launch program, also allowing import
 if abspath(PROGRAM_FILE) == @__FILE__
     
     # Parse arguments
-    #Base.flush_open(stdout)
     results = ""
     Utils.formatLogMessage(
         "Parsing command-line arguments",
@@ -163,7 +61,7 @@ if abspath(PROGRAM_FILE) == @__FILE__
         "FunctionRunner.jl",
         "FunctionRunner.main"
     )
-    args = parseArgs()
+    args = Utils.parseArgs()
 
     # Configure dependancies if supplied
     if !isnothing(args["dependancies"])
@@ -173,7 +71,7 @@ if abspath(PROGRAM_FILE) == @__FILE__
             "FunctionRunner.jl",
             "FunctionRunner.main"
         )
-        handleEnvArg(args["dependancies"])
+        Utils.handleEnvArg(args["dependancies"])
     end
 
     # Deserialize

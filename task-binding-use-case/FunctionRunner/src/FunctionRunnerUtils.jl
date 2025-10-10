@@ -13,7 +13,12 @@ Exports:
 """
 module FunctionRunnerUtils
 
-using JSON, Random, Printf, Dates
+using JSON, Random,
+    Printf, Dates
+
+using ArgParse, Tar,
+    LoggingExtras, Downloads
+
 
 include("./FunctionRunnerSerDe.jl")
 using .FunctionRunnerSerDe
@@ -103,7 +108,7 @@ function makeTaskDict(
     # Configure task
     label= "$taskName-$counter"
     encParam = SerDe.serializeToBase64(join(param, " "))
-    task = """bash -c 'set -ex; julia --debug "$PACKAGE_DIR/FunctionRunner.jl" --operation="$encFunc" --parameters="$encParam" --output="$taskDir/results/$label.txt" ' """
+    task = """julia --debug "$PACKAGE_DIR/FunctionRunner.jl" --operation="$encFunc" --parameters="$encParam" --output="$taskDir/results/$label.txt" """
 
     # Represent as an object
     taskDict = Dict(
@@ -166,6 +171,110 @@ function formatLogMessage(msg, level, __module, __method)
     println("$timestamp $(uppercase(level))  [ $__module -> $__method ]: \t$msg")
     flush(stdout)
 end
+
+
+"""
+`parseArgs() -> ArgParser`
+
+Defines and parses command-line arguments
+"""
+function parseArgs()
+
+    # Define arguments
+    parser = ArgParseSettings()
+    @add_arg_table parser begin
+        "--operation"
+            help = "Base64 encoded serailized Julia function"
+            arg_type = String
+            required = true
+
+        "--parameters"
+            help = "Base64 encoded serialized function params"
+            arg_type = String
+            required = false
+
+        "--dependancies"
+            help = "Add package dependancies, downloading and unpacking tar archive if contains '://'"
+            arg_type = String
+            required = false
+
+        "--output"
+            help = "File to write function result"
+            arg_type = String
+
+        "--serializeOutput"
+            help = "Flag for whether output should be serialized"
+            action = :store_true
+    end
+
+    # Parse and return
+    return parse_args(parser)
+end
+
+
+#=
+4). Fetch program dependancies
+=#
+
+"""
+`addPathToEnv(envPath::String)`
+
+Adds current directory to LOAD_PATH
+"""
+function addPathToEnv(envPath)
+    formatLogMessage(
+        "Package path added to LOAD_PATH:\t'$envPath'",
+        "info",
+        "FunctionRunner.jl",
+        "FunctionRunner.addPathToEnv"
+    )
+    push!(LOAD_PATH, envPath)
+end
+
+
+"""
+`fetchUrl(url::String)`
+
+Download, and unpack archive from provided URL
+"""
+function fetchUrl(url)
+
+    # Fetch url
+    formatLogMessage(
+        "Downloading function dependency:\t'$url'",
+        "info",
+        "FunctionRunner.jl",
+        "FunctionRunner.fetchFromUrl"
+    )
+    base = basename(url)
+    Downloads.download(url, base)
+    
+    # Unpack
+    formatLogMessage(
+        "Unpacking '$base'",
+        "info",
+        "FunctionRunner.jl",
+        "FunctionRunner.fetchFromUrl"
+    )
+    Tar.extract(base, pwd())
+end
+
+
+"""
+`handleEnvArg(envPath::String)`
+
+Handles adding provided environment path to LOAD_PATH.
+ If envPath is tar balled URL, resource is downloaded
+   and current directory is added
+"""
+function handleEnvArg(envPath)
+    if occursin("://", envPath)
+        fetchUrl(envPath)
+        addPathToEnv(pwd())
+    end
+    addPathToEnv(envPath)
+end
+
 
 # Close module
 end
