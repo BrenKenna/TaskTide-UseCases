@@ -20,6 +20,7 @@ module load libseccomp
 # Java-17, r4.4
 module load java
 module load R/4.4.2
+module load julia/1.11.3
 
 
 #####################################

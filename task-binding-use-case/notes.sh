@@ -1,3 +1,13 @@
+
+####################################################
+####################################################
+###
+### 1). Local Testing
+###
+####################################################
+####################################################
+
+
 export PATH="/mnt/c/Users/Brendan Kenna/Documents/GitHub/TaskTide/tasktide/use-cases/task-binding-use-case/Early-Task-Binding/tasktide-0.9.0/bin:$PATH"
 export PATH="/mnt/c/Users/Brendan Kenna/Documents/GitHub/TaskTide/tasktide/use-cases/task-binding-use-case/Early-Task-Binding/tasktide-0.9.0/lib:$PATH"
 
@@ -145,4 +155,44 @@ tasktide \
   --target "WORKITEM" \
   --step-name "FunctionRunner" \
   --execution-policy "service"
+
+
+####################################################
+####################################################
+###
+### 2). HPC Test
+###
+####################################################
+####################################################
+
+
+tasktide \
+  engine \
+  --repository-type "sqlite" \
+  --file-path "./ItemStoreRepo/sqlite" \
+  --target "WORKITEM" \
+  --step-name "FunctionRunner" \
+  --execution-policy "service"
+
+
+
+####################################################
+####################################################
+###
+###
+###
+####################################################
+####################################################
+
+
+# Submit job to GPU partition
+srun \
+    --partition=gpu --gres=gpu:1 \
+    --nodes=1 --ntasks=1 \
+    --job-name="GPU-Job"
+    --cpus-per-task=4 \
+    --mem=16G \
+    --time=02:00:00 \
+    python my_gpu_script.py
+
 
