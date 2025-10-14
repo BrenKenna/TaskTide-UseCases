@@ -21,6 +21,7 @@ module load libseccomp
 module load java
 module load R/4.4.2
 module load julia/1.11.3
+module load cuda/12.9
 
 
 #####################################
@@ -50,6 +51,11 @@ export CUSTOM_MODULES=$SOFT/opt
 export PYTHON_MODULES=$CUSTOM_MODULES/python
 export R_MODULES=$CUSTOM_MODULES/r
 export JAVA_MODULES=$CUSTOM_MODULES/java
+export JULIA_MODULES=$CUSTOM_MODULES/julia
+export JULIA_DEPOT_PATH=$JULIA_MODULES
+export JULIA_PROJECT=@.
+export LD_LIBRARY_PATH=/opt/software/el9/julia/1.11.3/lib:$LD_LIBRARY_PATH
+
 export ROCKS_CLI=$SOFT/rocksdb
 
 export PYTHONPATH=$PYTHON_MODULES:$PYTHONPATH
@@ -60,6 +66,12 @@ export CLASSPATH=$JAVA_MODULES:$CLASSPATH
 
 export GATK=$SOFT/bin/gatk-package-4.6.2.0-local.jar
 export BWA_DIR=$SOFT/bin/bwa
+
+
+# Spark
+export SPARK_HOME=$SOFT/spark-3.5.6
+export PATH=$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH
+export SPARK_JAR_PATH=$SPARK_HOME/jars
 
 
 # Sanity some programs
