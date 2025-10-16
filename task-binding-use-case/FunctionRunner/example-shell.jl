@@ -5,7 +5,7 @@ Julia script to demonstrate early-task binding use-case of
  TaskTide
 """
 using Pkg
-Pkg.activate("./FunctionRunner")
+Pkg.activate("FunctionRunner")
 #Pkg.instantiate()
 
 using JSON

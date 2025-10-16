@@ -1,4 +1,4 @@
-ackage: imageAnalysis
+Package: imageAnalysis
 Title: TaskTide - Image Analysis Use Case
 Version: 0.0.1
 Description: Task binding semantics use case for TaskTide

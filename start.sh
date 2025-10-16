@@ -20,7 +20,7 @@ module load libseccomp
 # Java-17, r4.4
 module load java
 module load R/4.4.2
-module load julia/1.11.3
+# module load julia/1.11.3
 module load cuda/12.9
 
 
@@ -50,11 +50,15 @@ export CONDA_PREFIX=$SOFT
 export CUSTOM_MODULES=$SOFT/opt
 export PYTHON_MODULES=$CUSTOM_MODULES/python
 export R_MODULES=$CUSTOM_MODULES/r
+export R_LIBS=$R_MODULES
+
 export JAVA_MODULES=$CUSTOM_MODULES/java
 export JULIA_MODULES=$CUSTOM_MODULES/julia
+export JULIA_LOAD_PATH="$JULIA_MODULES:@:@stdlib"
 export JULIA_DEPOT_PATH=$JULIA_MODULES
 export JULIA_PROJECT=@.
-export LD_LIBRARY_PATH=/opt/software/el9/julia/1.11.3/lib:$LD_LIBRARY_PATH
+
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/software/el9/julia/1.11.3/lib
 
 export ROCKS_CLI=$SOFT/rocksdb
 

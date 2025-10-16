@@ -32,7 +32,8 @@ conda install -y \
     conda-forge::jq \
     conda-forge::tree \
     conda-forge::rocksdb \
-    conda-forge::python-rocksdb
+    conda-forge::python-rocksdb \
+    conda-forge::julia
 
 
 # cURL
