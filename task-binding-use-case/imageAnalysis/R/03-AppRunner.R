@@ -37,27 +37,27 @@ runApp <- function(
 #' @name AppRunner
 # -------------------------------------------------------------------------
 if (
-    identical(environmentName(globalenv()), "R_GlobalEnv") &&
-    !interactive() &&
-    !is.null(commandArgs(TRUE))
+    interactive() == FALSE && identical(Sys.getenv("R_CMD_CHECK"), "") 
 ) {
 
     # Parse command line args
     args <- commandArgs(trailingOnly = TRUE)
-    logger <- Logger$new()
+    if ( length(args) > 0 ) {
 
-    # Validate arguments
-    if (!("--input-image" %in% args) || !("--output-image" %in% args)) {
-        logger$log_error(
-        "UseCases.ImageAnalysis.GrayscaleAppRunner", "main",
-        "Usage: Rscript -e 'imageAnalysis::run_grayscale(\"in.png\", \"out.jpg\")' \n"
-        )
-        quit(status = 1)
+        # Validate arguments
+        logger <- Logger$new()
+        if (!("--input-image" %in% args) || !("--output-image" %in% args)) {
+            logger$error(
+                "UseCases.ImageAnalysis.GrayscaleAppRunner", "main",
+                "Usage: Rscript -e 'imageAnalysis::run_grayscale(\"in.png\", \"out.jpg\")' \n"
+            )
+            quit(status = 1)
+        }
+
+        # Fetch args
+        input_image  <- args[which(args == "--input-image") + 1]
+        output_image <- args[which(args == "--output-image") + 1]
+
+        run_grayscale(input_image, output_image)
     }
-
-    # Fetch args
-    input_image  <- args[which(args == "--input-image") + 1]
-    output_image <- args[which(args == "--output-image") + 1]
-
-    run_grayscale(input_image, output_image)
 }

@@ -47,10 +47,16 @@ export PKG_CONFIG_PATH="$SOFT/lib/pkgconfig:$PKG_CONFIG_PATH"
 export PREFIX=$SOFT
 export CONDA_PREFIX=$SOFT
 
+# Spark
+export SPARK_HOME=$SOFT/spark-3.5.6
+export PATH=$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH
+export SPARK_JAR_PATH=$SPARK_HOME/jars
+
+# Custom software
 export CUSTOM_MODULES=$SOFT/opt
 export PYTHON_MODULES=$CUSTOM_MODULES/python
 export R_MODULES=$CUSTOM_MODULES/r
-export R_LIBS=$R_MODULES
+export R_LIBS=$R_MODULES:$SPARK_HOME/R/lib
 
 export JAVA_MODULES=$CUSTOM_MODULES/java
 export JULIA_MODULES=$CUSTOM_MODULES/julia
@@ -64,18 +70,13 @@ export ROCKS_CLI=$SOFT/rocksdb
 
 export PYTHONPATH=$PYTHON_MODULES:$PYTHONPATH
 export R_LIBS_USER=$R_MODULES
-export R_LIBS=$R_MODULES:$R_LIBS
+export R_LIBS=$R_MODULES:$SPARK_HOME/R/lib:$R_LIBS
 
 export CLASSPATH=$JAVA_MODULES:$CLASSPATH
 
 export GATK=$SOFT/bin/gatk-package-4.6.2.0-local.jar
 export BWA_DIR=$SOFT/bin/bwa
 
-
-# Spark
-export SPARK_HOME=$SOFT/spark-3.5.6
-export PATH=$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH
-export SPARK_JAR_PATH=$SPARK_HOME/jars
 
 
 # Sanity some programs
