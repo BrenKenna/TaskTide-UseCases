@@ -320,7 +320,7 @@ ImageStacker$methods(
 #' 
 # -------------------------------------------------------------------------
 ImageStacker$methods(
-    write_image_struct = function(path) {
+    parquetExport = function(path) {
         SparkR::write.df(
             SparkR::sql("SELECT * FROM processedImage"),
             path = path,
@@ -336,7 +336,8 @@ ImageStacker$methods(
 #'
 #' Writes image from parquet file, to output file
 #' 
-#' @param path: fully qualified file path for image
+#' @param parquetPath: fully qualified file path for input parquet
+#' @param outputImage: fully qualified file path for output image
 #' 
 #' @name ImageStacker
 #' 
@@ -364,5 +365,68 @@ ImageStacker$methods(
 
         # Write to provided file
         png::writePNG(img_array / 255, outputImage)
+    }
+)
+
+
+
+# -------------------------------------------------------------------------
+#'
+#' Runs ImageStacker pipeline
+#' 
+#' @param redExpr       : expression for red column
+#' @param greenExpr     : expression for green column
+#' @param blueExpr      : expression for blue column
+#' @param parquetPath   : fully qualified file path for input parquet
+#' @param outputImage   : fully qualified file path for output image
+#' 
+#' @name ImageStacker
+#' 
+# -------------------------------------------------------------------------
+ImageStacker$methods(
+    run = function(
+        redExpr = "255", greenExpr = "0", blueExpr = "0",
+        parquetPath = NA, imagePath = NA
+    ) {
+        tryCatch({
+
+            # Configure logger and spark session
+            lg <- .self$getLogger()
+            lg$info(clazz, "run", "================ Initiating ImageStacker Job ================")
+            .self$startSpark()
+
+            # Create pixel grid
+            lg$info(clazz, "run", "Creating pixel grid")
+            .self$createPixelGrid()
+
+            # Colorize pixels from iput expressions
+            lg$info(clazz, "run", "Colorizing image")
+            .self$colorize(redExpr = "255", greenExpr = "0", blueExpr = "0")
+
+            # Stich into image for export
+            lg$info(clazz, "run", "Stiching image for parquet/png export")
+            .self$stitchImage()
+
+            # Export to parquet
+            if ( parquetPath != NA ) {
+                lg$info(clazz, "run", "Storing image to parquet")
+                .self$parquetExport(parquetPath)
+
+                if ( imagePath != NA ) {
+                    lg$info(clazz, "run", "Storing image to parquet")
+                    .self$writeImage(parquetPath, imagePath)
+                }
+            }
+
+            # Log completion
+            lg$info(clazz, "run", "================ Completed ImageStacker Job Successfully ================")
+            sparkR.session.stop()
+        },
+
+        error = function(e) {
+            lg$error(clazz, "run", paste("Job failed with error:", e$message))
+            sparkR.session.stop()
+            quit(status = 1)
+        })
     }
 )

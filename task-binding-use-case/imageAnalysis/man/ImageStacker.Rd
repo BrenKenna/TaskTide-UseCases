@@ -12,13 +12,21 @@ image stacking.}
 
 \item{height}{}
 
+\item{path:}{fully qualified file path for image}
+
+\item{parquetPath:}{fully qualified file path for input parquet}
+
+\item{outputImage:}{fully qualified file path for output image}
+
 \item{redExpr}{: expression for red column}
 
 \item{greenExpr}{: expression for green column}
 
 \item{blueExpr}{: expression for blue column}
 
-\item{path:}{fully qualified file path for image}
+\item{parquetPath}{: fully qualified file path for input parquet}
+
+\item{outputImage}{: fully qualified file path for output image}
 }
 \value{
 Initialized ImageStacker instance

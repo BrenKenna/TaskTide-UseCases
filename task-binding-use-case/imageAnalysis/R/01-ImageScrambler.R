@@ -238,7 +238,7 @@ ImageScrambler$methods(
   run = function() {
     tryCatch({
       lg <- .self$getLogger()
-      lg$info(clazz, "run", "================ Initiating GrayScale Job ================")
+      lg$info(clazz, "run", "================ Initiating ImageScrambler Job ================")
 
       .self$startSpark()
       img <- .self$loadImage()
@@ -251,7 +251,7 @@ ImageScrambler$methods(
       res <- .self$computeGrayScale(df)
 
       .self$saveImage(res, h, w)
-      lg$info(clazz, "run", "================ Job Completed Successfully ================")
+      lg$info(clazz, "run", "================ Completed ImageScrambler Successfully ================")
       sparkR.session.stop()
     },
 

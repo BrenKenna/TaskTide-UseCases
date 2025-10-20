@@ -3,17 +3,14 @@
 
 # -----------------------------------------------------------------------------
 #' 
-#' Runs Image Analysis Applications
+#' Runs Image Scrambler application
 #' 
 #' @name AppRunner
 #' 
 #' @export
 #' 
 # -----------------------------------------------------------------------------
-runImageScrambler <- function(
-    input_image,
-    output_image
-) {
+runImageScrambler <- function(input_image, output_image) {
 
     # Scramble the input image, to the output image
     logger <- Logger$new()
@@ -29,6 +26,39 @@ runImageScrambler <- function(
     app$run()
     logger$info("UseCases.ImageAnalysis.AppRunner", "runImageScrambler", sprintf("Execution complete see results in '%s'", output_image))
 }
+
+
+
+# -----------------------------------------------------------------------------
+#' 
+#' Runs Image Analysis Applications
+#' 
+#' @name AppRunner
+#' 
+#' @export
+#' 
+# -----------------------------------------------------------------------------
+runImageStacker <- function(
+    redExpr = "255", greenExpr = "0", blueExpr = "0",
+    parquetPath = NA, imagePath = NA, height = 0, width = 0
+) {
+
+    # Scramble the input image, to the output image
+    logger <- Logger$new()
+    logger$info(
+        "UseCases.ImageAnalysis.AppRunner",
+        "runImageStacker",
+        sprintf("Begining execution with '%s' directing results to '%s'", input_image, output_image)
+    )
+    app <- ImageScrambler$new(
+        output_image = imagePath,
+        height = heigth,
+        width = width
+    )
+    app$run(parquetPath = parquetPath, imagePath = imagePath)
+    logger$info("UseCases.ImageAnalysis.AppRunner", "runImageStacker", sprintf("Execution complete see results in '%s'", output_image))
+}
+
 
 
 # -------------------------------------------------------------------------
@@ -57,10 +87,8 @@ if (
             quit(status = 1)
         }
 
-        
+        # Determine if scramble app is to be run
         analysis <- args[which(args == "--analysis") + 1]
-
-        # Determine which one to run
         if (analysis == "scramble") {
 
             # Fetch args
@@ -72,11 +100,26 @@ if (
             logger$info("UseCases.ImageAnalysis.AppRunner", "runImageScrambler", "Analysis complete")
         }
 
+        # Otherwise run image stacker
         else {
+
+            # Fetch core args
+            height <- args[which(args == "--heigth") + 1]
+            width <- args[which(args == "--heigth") + 1]
+            parquetPath <- args[which(args == "--parquet-path") + 1]
+            imagePath <- args[which(args == "--image-path") + 1]
+            
+            # Fetch image processing args
+            redExpr <- args[which(args == "--redVal-expression") + 1]
+            greenExpr <- args[which(args == "--greenVal-expression") + 1]
+            blueExpr <- args[which(args == "--blueVal-expression") + 1]
+
+            # Run the app
             logger$info("UseCases.ImageAnalysis.AppRunner", "runImageStacker", "Starting Spark session with RAPIDS enabled")
-            #
-            #
-            #
+            runImageStacker(
+                redExpr = "255", greenExpr = "0", blueExpr = "0",
+                parquetPath = NA, imagePath = NA, height = 350, width = 625
+            ) 
             logger$info("UseCases.ImageAnalysis.AppRunner", "runImageStacker", "Analysis complete")
         }
     }
