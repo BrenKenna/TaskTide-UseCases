@@ -12,13 +12,11 @@ suppressMessages({
 # -----------------------------------------------------------------------------
 #'
 #' A SparkR application that leverages Spark-RAPIDS to perform GPU-accelerated
-#' GrayScale conversion of input images. The class handles Spark initialization,
-#' image loading, DataFrame conversion, GrayScale transformation, and output
-#' persistence.
+#' image scrambling.
 #' 
 #' Fields:
 #'   - input_image  : character, path to the input image file
-#'   - output_image : character, path where the output GrayScale image is written
+#'   - output_image : character, path where the output scrambled image is written
 #'   - clazz        : character, fully qualified class identifier for logging
 #'
 #' 
@@ -32,12 +30,12 @@ suppressMessages({
 #'    - saveImage(),
 #'    - run()
 #' 
-#' @name GrayScalingApp
+#' @name ImageScrambler
 #' @export
 #'
 # -----------------------------------------------------------------------------
-GrayScaleApp <- setRefClass(
-  "GrayScaleApp",
+ImageScrambler <- setRefClass(
+  "ImageScrambler",
   fields = list(
     input_image = "character",
     output_image = "character",
@@ -52,12 +50,12 @@ GrayScaleApp <- setRefClass(
 #' 
 #' @param input_image Path to the input image file
 #' @param output_image Path to the GrayScale output image file
-#' @return Initialized GrayScaleApp instance
+#' @return Initialized ImageScrambler instance
 #' 
-#' @name GrayScalingApp
+#' @name ImageScrambler
 #' 
 # -------------------------------------------------------------------------
-GrayScaleApp$methods(
+ImageScrambler$methods(
   initialize = function(input_image, output_image) {
     .self$input_image <- input_image
     .self$output_image <- output_image
@@ -71,10 +69,10 @@ GrayScaleApp$methods(
 #'
 #' Lazy load logger
 #' 
-#' @name GrayScalingApp
+#' @name ImageScrambler
 #' 
 # -------------------------------------------------------------------------
-GrayScaleApp$methods(
+ImageScrambler$methods(
   getLogger = function() {
     if (is.null(.self$logger)) {
       .self$logger <- Logger$new()
@@ -88,10 +86,10 @@ GrayScaleApp$methods(
 #'
 #' Initializes a Spark session with Spark-RAPIDS plugin enabled.
 #' 
-#' @name GrayScalingApp
+#' @name ImageScrambler
 #' 
 # -------------------------------------------------------------------------
-GrayScaleApp$methods(
+ImageScrambler$methods(
   startSpark = function() {
     lg <- .self$getLogger()
     lg$info(clazz, "startSpark", "Starting Spark session with RAPIDS enabled")
@@ -115,10 +113,10 @@ GrayScaleApp$methods(
 #'
 #' @return Numeric array representing the input image
 #' 
-#' @name GrayScalingApp
+#' @name ImageScrambler
 #' 
 # -------------------------------------------------------------------------
-GrayScaleApp$methods(
+ImageScrambler$methods(
   loadImage = function() {
     lg <- .self$getLogger()
     lg$info(clazz, "loadImage", paste("Loading input image:", input_image))
@@ -140,10 +138,10 @@ GrayScaleApp$methods(
 #' @param img Numeric array of the input image
 #' @return Spark DataFrame with columns: row, col, r, g, b
 #' 
-#' @name GrayScalingApp
+#' @name ImageScrambler
 #' 
 # -------------------------------------------------------------------------
-GrayScaleApp$methods(
+ImageScrambler$methods(
   toDataFrame = function(img) {
     lg <- .self$getLogger()
     lg$info(clazz, "toDataFrame", "Converting image matrix into Spark DataFrame")
@@ -169,10 +167,10 @@ GrayScaleApp$methods(
 #' @param df Spark DataFrame with r, g, b channels
 #' @return Local R DataFrame with GrayScale values
 #' 
-#' @name GrayScalingApp
+#' @name ImageScrambler
 #' 
 # -------------------------------------------------------------------------
-GrayScaleApp$methods(
+ImageScrambler$methods(
   computeGrayScale = function(df) {
     lg <- .self$getLogger()
     lg$info(clazz, "computeGrayScale", "Executing GrayScale transformation via Spark SQL")
@@ -202,10 +200,10 @@ GrayScaleApp$methods(
 #' @param h Image height
 #' @param w Image width
 #' 
-#' @name GrayScalingApp
+#' @name ImageScrambler
 #' 
 # -------------------------------------------------------------------------
-GrayScaleApp$methods(
+ImageScrambler$methods(
   saveImage = function(res, h, w) {
     lg <- .self$getLogger()
     lg$info(clazz, "saveImage", paste("Saving GrayScale output to:", output_image))
@@ -233,10 +231,10 @@ GrayScaleApp$methods(
 #'
 #' Includes structured logging and error handling.
 #' 
-#' @name GrayScalingApp
+#' @name ImageScrambler
 #' 
 # -------------------------------------------------------------------------
-GrayScaleApp$methods(
+ImageScrambler$methods(
   run = function() {
     tryCatch({
       lg <- .self$getLogger()
