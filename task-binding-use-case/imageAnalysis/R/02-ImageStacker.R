@@ -301,7 +301,7 @@ ImageStacker$methods(
         SparkR::sql("
             CREATE OR REPLACE TEMP VIEW processedImage AS
                 SELECT
-                    CURRENT_TIMESTAMP() AS image_id,
+                    CURRENT_TIMESTAMP() AS imageId,
                     ARRAY_SORT(COLLECT_LIST(STRUCT(yVals, rowPixels))) AS imageRows
                 FROM
                     orderedPixels
@@ -344,11 +344,21 @@ ImageStacker$methods(
 #' 
 # -------------------------------------------------------------------------
 ImageStacker$methods(
-    writeImage = function(parquetPath, outputImage) {
+    writeImage = function(parquetPath, outputImage, imageId = NA) {
 
-        # Fetch image
-        df <- SparkR::collect(SparkR::sql("SELECT * FROM processedImage"))
-        img <- df$imageRows[[1]]
+        # Handle fetching image
+        if ( is.na(imageId) ) {
+            df <- SparkR::collect(SparkR::sql("SELECT * FROM processedImage"))
+            img <- df$imageRows[[1]]
+        }
+
+        # Fetch by id
+        else {
+            df <- SparkR::collect(SparkR::sql(sprintf(
+                "SELECT * FROM processedImage WHERE imageId = '%s'", imageId
+            )))
+            img <- df$imageRows[[1]]
+        }
 
         # Populate image array
         img_array <- array(0, dim = c(height, width, 3))
