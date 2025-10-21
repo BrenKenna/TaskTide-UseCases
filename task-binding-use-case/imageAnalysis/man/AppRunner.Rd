@@ -2,11 +2,11 @@
 % Please edit documentation in R/03-AppRunner.R
 \name{AppRunner}
 \alias{AppRunner}
-\alias{runImageScrambler}
+\alias{runImageProcessor}
 \alias{runImageStacker}
-\title{Runs Image Scrambler application}
+\title{Runs ImageProcessor application}
 \usage{
-runImageScrambler(input_image, output_image)
+runImageProcessor(input_image, output_image, mode = 0, height = 700)
 
 runImageStacker(
   redExpr = "255",
@@ -14,14 +14,14 @@ runImageStacker(
   blueExpr = "0",
   parquetPath = NA,
   imagePath = NA,
-  height = 0,
-  width = 0
+  height = 350,
+  width = 625
 )
 }
 \description{
-Runs Image Scrambler application
+Runs ImageProcessor application
 
-Runs Image Analysis Applications
+Runs Image Stacker application
 
 Depending on session context, run as a command-line program
 }

@@ -17,7 +17,9 @@ suppressMessages({
 #'  - warn
 #'  - error
 #' 
+#' @name Logger
 #' @export
+#' 
 # -----------------------------------------------------------------------------
 Logger <- setRefClass("Logger")
 

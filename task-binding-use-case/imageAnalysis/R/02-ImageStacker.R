@@ -33,8 +33,8 @@ ImageStacker <- setRefClass(
     "ImageStacker",
     fields = list(
         output_image = "character",
-        width = "integer",
-        height = "integer",
+        width = "numeric",
+        height = "numeric",
         clazz = "character",
         logger = "ANY"
     )
@@ -56,7 +56,7 @@ ImageStacker <- setRefClass(
 # -------------------------------------------------------------------------
 ImageStacker$methods(
     initialize = function(output_image, width, height) {
-        .self$output <- output_image
+        .self$output_image <- output_image
         .self$width <- width
         .self$height <- height
         .self$clazz <- "UseCases.ImageAnalysis.ImageStacker"
@@ -102,7 +102,7 @@ ImageStacker$methods(
 
 # -------------------------------------------------------------------------
 #'
-#' Set new value for heigth
+#' Set new value for height
 #' 
 #' @param height
 #' 
@@ -146,7 +146,7 @@ ImageStacker$methods(
     if (is.null(.self$logger)) {
       .self$logger <- Logger$new()
     }
-    .self$logger
+    return(.self$logger)
   }
 )
 
@@ -189,16 +189,16 @@ ImageStacker$methods(
     createPixelGrid = function() {
 
         # Initialixe data frame
-        xDf <- SparkR::createDataFrame(data.frame(x = 1: .self$getWidth()))
+        xDf <- SparkR::createDataFrame(data.frame(xVals = 1: .self$getWidth()))
         SparkR::createOrReplaceTempView(xDf, "xAxis")
-        yDf <- SparkR::createDataFrame(data.frame(y = 1: .self$getHeight()))
+        yDf <- SparkR::createDataFrame(data.frame(yVals = 1: .self$getHeight()))
         SparkR::createOrReplaceTempView(yDf, "yAxis")
 
         # Create image table
         SparkR::sql("
             CREATE OR REPLACE TEMP VIEW pixels AS
                 SELECT
-                    xAxis.xVals, yAxis.yVale
+                    xAxis.xVals, yAxis.yVals
                 FROM
                     xAxis
                 CROSS JOIN 
@@ -234,7 +234,7 @@ ImageStacker$methods(
 ImageStacker$methods(
     colorize = function(redExpr = "255", greenExpr = "0", blueExpr = "0") {
         SparkR::sql(sprintf("
-            CREATE OR REPLACE TEMP VIEW processedImage AS
+            CREATE OR REPLACE TEMP VIEW coloredPixels AS
                 SELECT
                     xVals, yVals,
                     (%s) AS redVals,
@@ -242,7 +242,7 @@ ImageStacker$methods(
                     (%s) AS blueVals
                 FROM
                     pixels
-        ", .self$width, redVals, greenVals, blueVals))
+        ", redExpr, greenExpr, blueExpr))
     }
 )
 
@@ -301,6 +301,7 @@ ImageStacker$methods(
         SparkR::sql("
             CREATE OR REPLACE TEMP VIEW processedImage AS
                 SELECT
+                    CURRENT_TIMESTAMP() AS image_id,
                     ARRAY_SORT(COLLECT_LIST(STRUCT(yVals, rowPixels))) AS imageRows
                 FROM
                     orderedPixels
@@ -325,7 +326,7 @@ ImageStacker$methods(
             SparkR::sql("SELECT * FROM processedImage"),
             path = path,
             source = "parquet",
-            mode = "overwrite"
+            mode = "append"
         )
     }
 )
@@ -346,24 +347,23 @@ ImageStacker$methods(
     writeImage = function(parquetPath, outputImage) {
 
         # Fetch image
-        df <- collect(read.df(parquetPath, "parquet"))
-        img <- df$image_rows[[1]]
-
-        # Initialize output array
-        height <- length(img)
-        width  <- length(img[[1]]$row_pixels)
-        img_array <- array(0, dim = c(height, width, 3))
+        df <- SparkR::collect(SparkR::sql("SELECT * FROM processedImage"))
+        img <- df$imageRows[[1]]
 
         # Populate image array
+        img_array <- array(0, dim = c(height, width, 3))
         for (r in seq_len(height)) {
-            row <- img[[r]]$row_pixels
+            row <- img[[r]]$rowPixels
             for (c in seq_len(width)) {
                 px <- row[[c]]
-                img_array[r, c, ] <- c(px$R, px$G, px$B)
+                img_array[r, c, ] <- c(px$redVals, px$greenVals, px$blueVals)
             }
         }
 
         # Write to provided file
+        #save(df, file = paste0(output_image + "-df.RData"))
+        #save(img_array, file = paste0(output_image + "-img_arr.RData"))
+        # cat("img_array saved to:", paste0(output_image, ".RData"), "\n")
         png::writePNG(img_array / 255, outputImage)
     }
 )
@@ -401,19 +401,19 @@ ImageStacker$methods(
 
             # Colorize pixels from iput expressions
             lg$info(clazz, "run", "Colorizing image")
-            .self$colorize(redExpr = "255", greenExpr = "0", blueExpr = "0")
+            .self$colorize(redExpr, greenExpr, blueExpr)
 
             # Stich into image for export
             lg$info(clazz, "run", "Stiching image for parquet/png export")
             .self$stitchImage()
 
             # Export to parquet
-            if ( parquetPath != NA ) {
+            if ( !is.na(parquetPath) ) {
                 lg$info(clazz, "run", "Storing image to parquet")
                 .self$parquetExport(parquetPath)
 
-                if ( imagePath != NA ) {
-                    lg$info(clazz, "run", "Storing image to parquet")
+                if ( !is.na(imagePath) ) {
+                    lg$info(clazz, "run", "Saving image from parquet to file")
                     .self$writeImage(parquetPath, imagePath)
                 }
             }
