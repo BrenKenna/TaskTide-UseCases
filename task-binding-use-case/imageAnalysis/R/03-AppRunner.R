@@ -31,7 +31,7 @@ runImageScrambler <- function(input_image, output_image) {
 
 # -----------------------------------------------------------------------------
 #' 
-#' Runs Image Analysis Applications
+#' Runs Image Stacker Application
 #' 
 #' @name AppRunner
 #' 
@@ -50,7 +50,7 @@ runImageStacker <- function(
         "runImageStacker",
         sprintf("Begining execution with '%s' directing results to '%s'", input_image, output_image)
     )
-    app <- ImageScrambler$new(
+    app <- ImageStacker$new(
         output_image = imagePath,
         height = heigth,
         width = width
@@ -105,7 +105,7 @@ if (
 
             # Fetch core args
             height <- args[which(args == "--heigth") + 1]
-            width <- args[which(args == "--heigth") + 1]
+            width <- args[which(args == "--width") + 1]
             parquetPath <- args[which(args == "--parquet-path") + 1]
             imagePath <- args[which(args == "--image-path") + 1]
             
