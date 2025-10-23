@@ -27,13 +27,16 @@ $SOFTWARE/aws/install -i $SOFTWARE/aws-cli -b $SOFTWARE/bin
 
 # Singularity and friends
 conda install -y \
-    conda-forge::singularity \
     conda-forge::libpsl \
     conda-forge::jq \
     conda-forge::tree \
     conda-forge::rocksdb \
     conda-forge::python-rocksdb \
     conda-forge::julia
+
+conda create -n singularity_env python=3.10
+conda activate singularity_env
+conda install -c conda-forge singularity=3.8.6
 
 
 # cURL

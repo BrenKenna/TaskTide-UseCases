@@ -27,26 +27,19 @@ Exports:
 """
 module FunctionRunner
 
-println("Importing Modules")
-flush(stdout)
-
 
 # Include utility and SerDe
-println("Importing FunctionRunner")
-flush(stdout)
-
-include("./FunctionRunnerUtils.jl")
+const PACKAGE_DIR = @__DIR__
+include(joinpath(PACKAGE_DIR, "FunctionRunnerUtils.jl"))
 using .FunctionRunnerUtils
 const Utils = FunctionRunnerUtils
 
-include("./FunctionRunnerSerDe.jl")
+include(joinpath(PACKAGE_DIR, "FunctionRunnerSerDe.jl"))
 using .FunctionRunnerSerDe
 const SerDe = FunctionRunnerSerDe
 
 
 # Configure exports
-println("Configuring exports")
-flush(stdout)
 export Utils, SerDe
 
 
@@ -76,17 +69,17 @@ if abspath(PROGRAM_FILE) == @__FILE__
 
     # Deserialize
     Utils.formatLogMessage(
-            "Deserializing function",
-            "info",
-            "FunctionRunner.jl",
-            "FunctionRunner.main"
+        "Deserializing function",
+        "info",
+        "FunctionRunner.jl",
+        "FunctionRunner.main"
     )
     func = SerDe.deserializeFunction(args["operation"])
     Utils.formatLogMessage(
-            "Deserializied function shown below:  $func\n\n$(methods(func))\n",
-            "info",
-            "FunctionRunner.jl",
-            "FunctionRunner.main"
+        "Deserializied function shown below:  $func\n\n$(methods(func))\n",
+        "info",
+        "FunctionRunner.jl",
+        "FunctionRunner.main"
     )
     if !isnothing(args["parameters"])
         Utils.formatLogMessage(
@@ -169,6 +162,7 @@ if abspath(PROGRAM_FILE) == @__FILE__
         "FunctionRunner.main"
     )
 end
+
 
 # Close module
 end

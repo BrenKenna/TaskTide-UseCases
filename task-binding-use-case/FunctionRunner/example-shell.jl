@@ -20,7 +20,7 @@ using FunctionRunner
 
 # Set standard variables
 REPOSITORY_TYPE = "sqlite"
-WORKING_DIRECTORY = "/home/bren/Early-Task-Binding"
+WORKING_DIRECTORY = "./Early-Task-Binding"
 REPOSITORY = "$WORKING_DIRECTORY/ItemStoreRepo/$REPOSITORY_TYPE"
 STEP_NAME = "FunctionRunner"
 TASK_DELIMITER = "JSON"

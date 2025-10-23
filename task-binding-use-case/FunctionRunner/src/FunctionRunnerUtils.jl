@@ -20,11 +20,11 @@ using ArgParse, Tar,
     LoggingExtras, Downloads
 
 
-include("./FunctionRunnerSerDe.jl")
+PACKAGE_DIR = @__DIR__
+include(joinpath(PACKAGE_DIR, "FunctionRunnerSerDe.jl"))
 using .FunctionRunnerSerDe
 const SerDe = FunctionRunnerSerDe
 
-PACKAGE_DIR = @__DIR__
 export writeTasksToJsonFile, randomNumbers, SerDe
 
 

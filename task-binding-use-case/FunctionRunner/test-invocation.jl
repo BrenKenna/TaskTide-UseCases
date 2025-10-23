@@ -1,12 +1,3 @@
-using Pkg
-Pkg.activate("./src/FunctionRunner")
-# Pkg.instantiate()
-
-using JSON
-using CSV
-using DataFrames
-using Printf
-
 # Import and inspect
 using FunctionRunner
 
