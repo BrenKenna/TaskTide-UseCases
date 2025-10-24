@@ -57,7 +57,8 @@ Write a list of pre-defined parameters to file for import
 """
 function writeTasksToJsonFile(
     taskDir, taskName, stepName, 
-    annotation, func, listOfTupledParams
+    annotation, func, listOfTupledParams,
+    singularityFlag = false
 )
     
     # Encode function
@@ -69,12 +70,21 @@ function writeTasksToJsonFile(
     for param in listOfTupledParams
 
         # Define labels
-        taskDict = makeTaskDict(
-            taskName, counter,
-            param, annotation,
-            taskDir, encFunc,
-            stepName
-        )
+        taskDict = if singularityFlag
+            makeTaskDictSingnularity(
+                taskName, counter,
+                param, annotation,
+                taskDir, encFunc,
+                stepName
+            )
+        else
+            makeTaskDict(
+                taskName, counter,
+                param, annotation,
+                taskDir, encFunc,
+                stepName
+            )
+        end
         
         # Push to json array
         push!(taskCollection, taskDict)
@@ -119,6 +129,45 @@ function makeTaskDict(
     )
     return taskDict
 end
+
+
+
+"""
+`
+makeTaskDictSingnularity(
+      taskName::String, counter::Int,
+      param::String, annotation::Dict,
+      taskDir::String, encFunc::String,
+      stepName::String
+) -> Dict
+`
+
+Represent task parameters as a dictionary/json
+"""
+function makeTaskDictSingnularity(
+    taskName, counter,
+    param, annotation,
+    taskDir, encFunc,
+    stepName
+)
+
+    # Configure task
+    label= "$taskName-$counter"
+    encParam = SerDe.serializeToBase64(join(param, " "))
+    SOFT = ENV["SOFT"]
+    task = """bash $SOFT/bin/singularity-runner.sh --debug "$PACKAGE_DIR/FunctionRunner.jl" --operation="$encFunc" --parameters="$encParam" --output="$taskDir/results/$label.txt" """
+
+    # Represent as an object
+    taskDict = Dict(
+        "Task Name" => taskName,
+        "Step Name" => stepName,
+        "Annotations" => annotation,
+        "Task Script" => task
+    )
+    return taskDict
+end
+
+
 
 
 """

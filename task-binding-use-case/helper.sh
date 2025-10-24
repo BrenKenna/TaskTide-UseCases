@@ -70,109 +70,45 @@ cd $TASK_TIDE
 # Install FunctionRunner
 cd $JULIA_MODULES
 
-```{julia}
+tar -xvf FunctionRunnerSandBox.tar.gz
 
-using Pkg
-
-cd("/opt/julia")
-Pkg.activate("./")
-Pkg.develop(path="./")
-Pkg.instantiate()
-Pkg.precompile()
-
-
-run(`julia --project=. ./test-invocation.jl`)
-
-run(`
-    julia --project=. ./src/FunctionRunner.jl --operation "N0pMHgQAAAA5IaJmdW5jdGlvbiBteVNlcmRlRnVuYyhwYXJhbXMuLi47IFBhcnNlVG9UeXBlOjpUeXBlPUludCkKICAgIHBhcnNlZCA9IG1hcCgKICAgICAgICBlbG0gLT4gcGFyc2UoUGFyc2VUb1R5cGUsIGVsbSksCiAgICAgICAgcGFyYW1zCiAgICApCiAgICByZXR1cm4gcHJvZChwYXJzZWQpCmVuZAo=" --parameters "N0pMHgQAAAAhAzMgNw=="
-    `
-)
-
-
-using FunctionRunner
+singularity --version
+singularity exec \
+  --writable \
+  --pwd /opt/julia \
+  --env JULIA_DEPOT_PATH=/opt/julia/.julia \
+  --env JULIA_PKG_PRECOMPILE_DIR=/opt/julia/.julia/compiled \
+  $JULIA_MODULES/FunctionRunnerSandBox \
+  julia --project=/opt/julia ./src/FunctionRunner.jl \
+      --operation="N0pMHgQAAAA5IaJmdW5jdGlvbiBteVNlcmRlRnVuYyhwYXJhbXMuLi47IFBhcnNlVG9UeXBlOjpUeXBlPUludCkKICAgIHBhcnNlZCA9IG1hcCgKICAgICAgICBlbG0gLT4gcGFyc2UoUGFyc2VUb1R5cGUsIGVsbSksCiAgICAgICAgcGFyYW1zCiAgICApCiAgICByZXR1cm4gcHJvZChwYXJzZWQpCmVuZAo=" \
+      --parameters="N0pMHgQAAAAhBDE4IDc="
 
 '''
 
-   Resolving package versions...
-    Updating `~/software/opt/julia/@v1.10/Project.toml`
-  [90a9486e] + FunctionRunner v0.1.0 `~/software/opt/julia/FunctionRunner`
-    Updating `~/software/opt/julia/@v1.10/Manifest.toml`
-  [c7e460c6] + ArgParse v1.2.0
-  [336ed68f] + CSV v0.10.15
-  [944b1d66] + CodecZlib v0.7.8
-  [34da2185] + Compat v4.18.1
-  [a8cc5b0e] + Crayons v4.1.1
-  [9a962f9c] + DataAPI v1.16.0
-  [a93c6f00] + DataFrames v1.8.0
-  [864edb3b] + DataStructures v0.19.1
-  [e2d170a0] + DataValueInterfaces v1.0.0
-  [48062228] + FilePathsBase v0.9.24
-  [90a9486e] + FunctionRunner v0.1.0 `~/software/opt/julia/FunctionRunner`
-  [842dd82b] + InlineStrings v1.4.5
-  [41ab1584] + InvertedIndices v1.3.1
-  [82899510] + IteratorInterfaceExtensions v1.0.0
-  [682c06a0] + JSON v1.1.0
-  [b964fa9f] + LaTeXStrings v1.4.0
-  [e6f89c97] + LoggingExtras v1.2.0
-  [e1d29d7a] + Missings v1.2.0
-  [bac558e1] + OrderedCollections v1.8.1
-  [69de0a69] + Parsers v2.8.3
-  [2dfb63ee] + PooledArrays v1.4.3
-⌅ [aea7be01] + PrecompileTools v1.2.1
-  [21216c6a] + Preferences v1.5.0
-  [08abe8d2] + PrettyTables v3.1.0
-  [189a3867] + Reexport v1.2.2
-  [91c51154] + SentinelArrays v1.4.8
-  [a2af1166] + SortingAlgorithms v1.2.2
-  [892a3eda] + StringManipulation v0.4.1
-  [ec057cc2] + StructUtils v2.5.1
-  [3783bdb8] + TableTraits v1.0.1
-  [bd369af6] + Tables v1.12.1
-  [b718987f] + TextWrap v1.0.2
-  [3bb67fe8] + TranscodingStreams v0.11.3
-  [ea10d353] + WeakRefStrings v1.4.2
-  [76eceee3] + WorkerUtilities v1.6.1
-  [0dad84c5] + ArgTools v1.1.1
-  [56f22d72] + Artifacts
-  [2a0f44e3] + Base64
-  [ade2ca70] + Dates
-  [f43a241f] + Downloads v1.6.0
-  [7b1f6079] + FileWatching
-  [9fa8497b] + Future
-  [b77e0a4c] + InteractiveUtils
-  [b27032c2] + LibCURL v0.6.4
-  [8f399da3] + Libdl
-  [37e2e46d] + LinearAlgebra
-  [56ddb016] + Logging
-  [d6f4376e] + Markdown
-  [a63ad114] + Mmap
-  [ca575930] + NetworkOptions v1.2.0
-  [de0858da] + Printf
-  [3fa0cd96] + REPL
-  [9a3f8284] + Random
-  [ea8e919c] + SHA v0.7.0
-  [9e88b42a] + Serialization
-  [6462fe0b] + Sockets
-  [2f01184e] + SparseArrays v1.10.0
-  [10745b16] + Statistics v1.10.0
-  [fa267f1f] + TOML v1.0.3
-  [cf7118a7] + UUIDs
-  [4ec0a83e] + Unicode
-  [e66e0078] + CompilerSupportLibraries_jll v1.1.0+0
-  [deac9b47] + LibCURL_jll v8.4.0+0
-  [29816b5a] + LibSSH2_jll v1.11.0+1
-  [c8ffd9c3] + MbedTLS_jll v2.28.2+1
-  [14a3606d] + MozillaCACerts_jll v2023.1.10
-  [4536629a] + OpenBLAS_jll v0.3.23+4
-  [bea87d4a] + SuiteSparse_jll v7.2.1+1
-  [83775a58] + Zlib_jll v1.2.13+1
-  [8e850b90] + libblastrampoline_jll v5.8.0+1
-  [8e850ede] + nghttp2_jll v1.52.0+1
-        Info Packages marked with ⌅ have new versions available but compatibility constraints restrict them from upgrading. To see why use `status --outdated -m`
+singularity version 3.8.6
+
+2025-10-24 11:52:58 INFO  [ FunctionRunner.jl -> FunctionRunner.main ]:         Parsing command-line arguments
+2025-10-24 11:52:59 INFO  [ FunctionRunner.jl -> FunctionRunner.main ]:         Deserializing function
+2025-10-24 11:53:00 INFO  [ FunctionRunner.jl -> FunctionRunner.main ]:         Deserializied function shown below:  mySerdeFunc
+
+# 1 method for generic function "mySerdeFunc" from Main.FunctionRunner.FunctionRunnerSerDe:
+ [1] mySerdeFunc(params...; ParseToType)
+     @ none:1
+
+2025-10-24 11:53:00 INFO  [ FunctionRunner.jl -> FunctionRunner.main ]:         Deserializing function parameters
+2025-10-24 11:53:01 INFO  [ FunctionRunner.jl -> FunctionRunner.main ]:         SubString{String}["18", "7"]
+2025-10-24 11:53:01 INFO  [ FunctionRunner.jl -> FunctionRunner.main ]:         Determining whether to serialize results
+2025-10-24 11:53:01 INFO  [ FunctionRunner.jl -> FunctionRunner.main ]:         Determining where to direct results to
+2025-10-24 11:53:01 INFO  [ FunctionRunner.jl -> FunctionRunner.main ]:         No target file provided, returning result
+2025-10-24 11:53:01 INFO  [ FunctionRunner.jl -> FunctionRunner.main ]:         --- FUNCTION RUNNER OUTPUT ---
+
+126
+
+--- FUNCTION RUNNER OUTPUT ---
+2025-10-24 11:53:01 INFO  [ FunctionRunner.jl -> FunctionRunner.main ]:         Processing completed
 
 '''
 
-```
 
 
 # Install image analysis app

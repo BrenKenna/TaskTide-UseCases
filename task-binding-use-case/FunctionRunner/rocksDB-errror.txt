@@ -1,0 +1,39 @@
+2025-10-24 13:32:54 ERROR [ pool-2-thread-2 -> org.tasktide.itemstore.RocksDBStore.openConn ]: Error openning connection to DB:
+
+2025-10-24 15:15:49 ERROR [ pool-2-thread-2 -> org.tasktide.itemstore.RocksDBStore.openConn ]: Error openning connection to DB:
+
+org.rocksdb.RocksDBException: lock hold by current process, acquire time 1761315349 acquiring thread 139709078500928: /scratch/bkenna/function-runner/ItemStoreRepository/rocksdb/JOB_ENVIRONMENT/master/LOCK: No locks available
+        at org.rocksdb.RocksDB.open(Native Method)
+        at org.rocksdb.RocksDB.open(RocksDB.java:263)
+        at org.tasktide.itemstore.RocksDBStore.openConn(RocksDBStore.java:454)
+        at org.tasktide.itemstore.RocksDBStore.getAll(RocksDBStore.java:133)
+        at org.tasktide.core.repository.ItemStoreRepository.findByField(ItemStoreRepository.java:328)
+        at org.tasktide.core.services.JobEnvironmentService.viewByField(JobEnvironmentService.java:91)
+        at org.tasktide.core.manager.TaskTideManagerUtility.fetchJobEnvironmentId(TaskTideManagerUtility.java:200)
+        at org.tasktide.engine.observer.worker.StateObserver.<init>(StateObserver.java:50)
+        at org.tasktide.engine.observer.worker.stateobserver.WorkItemStateObserver.<init>(WorkItemStateObserver.java:55)
+        at org.tasktide.engine.observer.chain.WorkItemObserver.<init>(WorkItemObserver.java:46)
+        at org.tasktide.engine.worker.executor.WorkItemExecutor.<init>(WorkItemExecutor.java:54)
+        at org.tasktide.engine.worker.processor.WorkItemProcessor.<init>(WorkItemProcessor.java:55)
+        at org.tasktide.engine.worker.processor.WorkItemProcessor.newSubProcessor(WorkItemProcessor.java:86)
+        at org.tasktide.engine.worker.processor.TaskTideProcessor.lambda$submitParallelSubTask$1(TaskTideProcessor.java:182)
+        at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+        at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+        at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+        at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+        at java.base/java.lang.Thread.run(Thread.java:840)
+2025-10-24 15:15:49 DEBUG [ pool-2-thread-2 -> org.tasktide.itemstore.RocksDBStore.getAll ]: Fetching master iter 'MASTER' from:        '/scratch/bkenna/function-runner/ItemStoreRepository/rocksdb/JOB_ENVIRONMENT/3184c6fb-3cd9-4561-b8bc-0dd7da39bc39'
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  SIGSEGV (0xb) at pc=0x00007f0fbf07eed9, pid=392591, tid=392938
+#
+# JRE version: OpenJDK Runtime Environment Temurin-17.0.11+9 (17.0.11+9) (build 17.0.11+9)
+# Java VM: OpenJDK 64-Bit Server VM Temurin-17.0.11+9 (17.0.11+9, mixed mode, sharing, tiered, compressed oops, compressed class ptrs, g1 gc, linux-amd64)
+# Problematic frame:
+# C  [librocksdbjni6368168145401188727.so+0x47eed9]  rocksdb::DBImpl::FailIfCfHasTs(rocksdb::ColumnFamilyHandle const*) const+0x29
+#
+# Core dump will be written. Default location: Core dumps may be processed with "/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h" (or dumping to /home/people/bkenna/software/opt/java/tmp/core.392591)
+#
+# An error report file with more information is saved as:
+# /home/people/bkenna/software/opt/java/tmp/hs_err_pid392591.log
