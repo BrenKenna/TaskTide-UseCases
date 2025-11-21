@@ -1,6 +1,6 @@
 # Use Case Notes
 <p>
-Contains notes on any issues/limitations from running TaskTide during each use-case. Depending on the type, these lead to redeployment to verify change(s), in addition to unit-tests.
+Contains notes on any issues/limitations from running TaskTide during each use-case. Depending on the type, these lead to redeployment to verify change(s), in addition to unit-tests. Entries would ideally be a little higher level than those in the <a href="/CHANGELOG.adoc">change log</a>, because want to catch and collect these for version-1. Allows the MVP from first use-case, to be compared to version-1 artifact.
 </p>
 
 <p>
@@ -9,7 +9,7 @@ Story is in the use-cases workflow development, and deployment. Where even with 
 </p>
 
 
-## 1). Workflow Orchestration
+## 1). Workflow Orchestration - Sept/2025
 <ul>
     <li>How would config validator look?</li>
     <li>Configure log dirs</li>
@@ -22,7 +22,7 @@ Story is in the use-cases workflow development, and deployment. Where even with 
 </ul>
 
 
-## 2). Task Binding
+## 2). Task Binding - Oct/2025
 <ul>
     <li>Need for REST API</li>
     <li>Ideal use is not arbitrary function runner (Hadoop). But workflow orchestration</li>
