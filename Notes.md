@@ -1,6 +1,6 @@
 # Use Case Notes
 <p>
-Contains notes on any issues/limitations from running TaskTide during each use-case. Depending on the type, these lead to repdeployment to verify change(s).
+Contains notes on any issues/limitations from running TaskTide during each use-case. Depending on the type, these lead to redeployment to verify change(s), in addition to unit-tests.
 </p>
 
 <p>
