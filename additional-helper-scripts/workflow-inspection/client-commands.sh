@@ -378,28 +378,21 @@ echo -e "WorkItem-d1ec0e17-b7d0-4ca6-812b-0af8f76bb5e8\\nWorkItem-b83c5350-43ca-
   --file-path "./ItemStoreRepo/sqlite" \
   --target "WORKITEM" \
   --step-name "PingTest" \
-  --work-item-threads 2
+  --work-item-threads 5
 
 ''' --> Hangs when #Threads > #Available Tasks
 
-2026-02-17 14:11:34 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Processing workload of size:   '4'
-2026-02-17 14:11:34 INFO  [ main -> org.tasktide.engine.TaskTideEngineUtility.waitOnExecutorTrackerWorkItem ]: Begining state monitoring of ExecutorServiceTracker:  N tasks = '0'
-2026-02-17 14:11:34 INFO  [ main -> org.tasktide.engine.TaskTideEngineUtility.waitOnExecutorTrackerWorkItem ]: Letting '10000'ms elapse for state monitoring of ExecutorServiceTracker:       '0'
-2026-02-17 14:11:44 INFO  [ main -> org.tasktide.engine.TaskTideEngineUtility.waitOnExecutorTrackerWorkItem ]: Displaying Iter-'0' StateSummary of ExecutorServiceTracker:
-
-Total='0', Remaining='0', Done='0', Expected='4'
-2026-02-17 14:11:44 INFO  [ main -> org.tasktide.engine.TaskTideEngineUtility.waitOnExecutorTrackerWorkItem ]: Letting '10000'ms elapse for state monitoring of ExecutorServiceTracker:       '0'
-
-
-2026-02-17 14:12:53 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Processing workload of size:   '4'
-2026-02-17 14:12:53 INFO  [ pool-2-thread-1 -> org.tasktide.engine.worker.executor.TaskTideExecutor.runTasks ]: Begining workload processing of N = '1' tasks
-2026-02-17 14:12:53 INFO  [ pool-2-thread-1 -> org.tasktide.engine.observer.worker.TimeKeeperObserver.evaluateStart ]: TimeKeeper evaluating starting of task 'WorkItem-73121c61-90b0-4339-88e8-e41316a1a334'
-2026-02-17 14:12:53 INFO  [ pool-2-thread-1 -> org.tasktide.engine.observer.worker.TimeKeeperObserver.evaluateStart ]: Atomic TimeKeeper for task 'WorkItem-73121c61-90b0-4339-88e8-e41316a1a334' set on thread 'pool-2-thread-1'
-2026-02-17 14:12:53 INFO  [ pool-2-thread-1 -> org.tasktide.engine.observer.worker.TimeKeeperObserver.onTaskStart ]: TimeKeeper evaluated time left for processing as 'true' for ItemTask:    'WorkItem-73121c61-90b0-4339-88e8-e41316a1a334'
-2026-02-17 14:12:53 INFO  [ main -> org.tasktide.engine.TaskTideEngineUtility.waitOnExecutorTrackerWorkItem ]: Begining state monitoring of ExecutorServiceTracker:  N tasks = '2'
-2026-02-17 14:12:53 INFO  [ pool-2-thread-2 -> org.tasktide.engine.worker.executor.TaskTideExecutor.runTasks ]: Begining workload processing of N = '1' tasks
-2026-02-17 14:12:53 INFO  [ main -> org.tasktide.engine.TaskTideEngineUtility.waitOnExecutorTrackerWorkItem ]: Letting '10000'ms elapse for state monitoring of ExecutorServiceTracker:       '2'
-
+2026-02-17 16:29:51 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Processing workload of size:   '4'
+2026-02-17 16:29:51 INFO  [ main -> org.tasktide.engine.worker.processor.TaskTideProcessor.processChunks ]: Shuffling, and grouping workload for ExecutorService for ProcessorType:        'WorkItemProcessor'
+2026-02-17 16:29:51 INFO  [ main -> org.tasktide.engine.worker.processor.WorkItemProcessor.parallelChunks ]: Fetching N = '5' batches of size '0' for WorkItem workload
+2026-02-17 16:29:51 INFO  [ main -> org.tasktide.engine.worker.processor.TaskTideProcessor.processChunks ]: Submitting 'WorkItemProcessor' workload of size:    '4'        
+2026-02-17 16:29:51 INFO  [ main -> org.tasktide.engine.worker.processor.TaskTideProcessor.submitParallelChunks ]: Submitting sub-workload of size:     '0'
+2026-02-17 16:29:51 INFO  [ main -> org.tasktide.engine.worker.processor.TaskTideProcessor.submitParallelChunks ]: Submitting sub-workload of size:     '0'
+2026-02-17 16:29:51 INFO  [ main -> org.tasktide.engine.worker.processor.TaskTideProcessor.submitParallelChunks ]: Submitting sub-workload of size:     '0'
+2026-02-17 16:29:51 INFO  [ main -> org.tasktide.engine.worker.processor.TaskTideProcessor.submitParallelChunks ]: Submitting sub-workload of size:     '0'
+2026-02-17 16:29:51 INFO  [ main -> org.tasktide.engine.worker.processor.TaskTideProcessor.processChunks ]: Submitted N = '0' items for workload 'WorkItemProcessor'       
+2026-02-17 16:29:51 INFO  [ main -> org.tasktide.engine.TaskTideEngineUtility.waitOnExecutorTrackerWorkItem ]: Begining state monitoring of ExecutorServiceTracker:     N tasks = '0'
+2026-02-17 16:29:51 INFO  [ main -> org.tasktide.engine.TaskTideEngineUtility.waitOnExecutorTrackerWorkItem ]: Letting '10000'ms elapse for state monitoring of ExecutorServiceTracker:    '0'
 
 '''
 
@@ -411,7 +404,9 @@ Total='0', Remaining='0', Done='0', Expected='4'
   --file-path "./ItemStoreRepo/sqlite" \
   --target "WORKITEM" \
   --step-name "PingTest" \
-  --execution-policy "service"
+  --execution-policy "service" \
+  --work-item-threads 5
+
 
 ./bin/tasktide \
   manager \
@@ -425,90 +420,32 @@ Total='0', Remaining='0', Done='0', Expected='4'
 
 
 ''
-2026-02-17 14:37:13 DEBUG [ main -> org.tasktide.parser.CliParser.parseFromMap ]: Parsing argument data:
-'Argument{value=1, refClass=class java.lang.Integer, name=WorkItem SubTasking Threshold, shortFlag=-ws, longFlag=--work-item-sub-task-threshold, description=Defines the numbers of WorkItems which are processed as a workload by its ThreadPool, argType=ACTION}'
-2026-02-17 14:37:13 DEBUG [ main -> org.tasktide.parser.CliParser.parseFromMap ]: Parsing argument data:
-'Argument{value=1, refClass=class java.lang.Integer, name=ItemTask Threads, shortFlag=-i, longFlag=--item-task-threads, description=Defines the number of threads that item task processing can be distributed to, argType=ACTION}'
-2026-02-17 14:37:13 DEBUG [ main -> org.tasktide.parser.CliParser.parseFromMap ]: Parsing argument data:
-'Argument{value=1, refClass=class java.lang.Integer, name=WorkItem Threads, shortFlag=-w, longFlag=--work-item-threads, description=Defines the number of threads that work item processing can be distributed to, argType=ACTION}'
-2026-02-17 14:37:13 DEBUG [ main -> org.tasktide.parser.CliParser.parseFromMap ]: Fetched raw value of 'null'
-2026-02-17 14:37:13 DEBUG [ main -> org.tasktide.parser.CliParser.parseFromMap ]: Parsing argument data:
-'Argument{value=1, refClass=class java.lang.Integer, name=ItemTask SubTasking Threshold, shortFlag=-is, longFlag=--item-task-sub-task-threshold, description=Defines the numbers of ItemTasks which are processed as a workload by its ThreadPool, argType=ACTION}'
 
-2026-02-17 14:37:31 WARN  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Warning, no ToDo tasks available for processing. Query below backend for more information
+2026-02-17 17:37:51 WARN  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Warning, no ToDo tasks available for processing. Query below backend for more information
 
 {Collection Name=WorkItem-Service, Model Class=WorkItem, Repository Type=Item Store}
 
 
-2026-02-17 14:37:31 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Processing complete for step:      'PingTest'    
-2026-02-17 14:37:35 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Determing how to process workload
-2026-02-17 14:37:35 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Processing single step:    'PingTest'
-2026-02-17 14:37:35 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchWorkload ]: No pilot label provided, processing all tasks  
-2026-02-17 14:37:35 DEBUG [ main -> org.tasktide.itemstore.AbstractItemStore.waitForLock ]: Waiting for
-2026-02-17 14:37:35 INFO  [ main -> org.tasktide.itemstore.AbstractItemStore.waitForMutex ]: Acquiring mutex
-2026-02-17 14:37:37 INFO  [ main -> org.tasktide.itemstore.AbstractItemStore.waitForMutex ]: Mutex acquired
-2026-02-17 14:37:37 INFO  [ main -> org.tasktide.itemstore.AbstractItemStore.releaseMutex ]: Releasing mutex
-2026-02-17 14:37:37 INFO  [ main -> org.tasktide.itemstore.AbstractItemStore.releaseMutex ]: Released mutex
-2026-02-17 14:37:37 WARN  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Warning, no ToDo tasks available for processing. Query below backend for more information
+2026-02-17 17:37:51 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Processing complete for step:      'PingTest'
+2026-02-17 17:37:52 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Determing how to process workload
+2026-02-17 17:37:52 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Processing single step:    'PingTest'
+2026-02-17 17:37:52 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchWorkload ]: No pilot label provided, processing all tasks       
+
+2026-02-17 17:39:09 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Processing workload of size:   '4'
+2026-02-17 17:39:09 INFO  [ main -> org.tasktide.engine.worker.processor.TaskTideProcessor.processChunks ]: Shuffling, and grouping workload for ExecutorService for ProcessorType:        'WorkItemProcessor'
+2026-02-17 17:39:09 INFO  [ main -> org.tasktide.engine.worker.processor.WorkItemProcessor.parallelChunks ]: Fetching N = '5' batches of size '1' for WorkItem workload
+2026-02-17 17:39:09 INFO  [ main -> org.tasktide.engine.worker.processor.TaskTideProcessor.processChunks ]: Submitting 'WorkItemProcessor' workload of size:       '4'
+2026-02-17 17:39:09 INFO  [ main -> org.tasktide.engine.worker.processor.TaskTideProcessor.submitParallelChunks ]: Submitting sub-workload of size:     '1'
+2026-02-17 17:39:09 INFO  [ pool-2-thread-1 -> org.tasktide.engine.worker.executor.TaskTideExecutor.runTasks ]: Begining workload processing of N = '1' tasks
+2026-02-17 17:39:09 INFO  [ pool-2-thread-1 -> org.tasktide.engine.observer.worker.TimeKeeperObserver.evaluateStart ]: TimeKeeper evaluating starting of task 'WorkItem-22e95dad-2062-42c2-81c6-b1a9fd98ce71'
+
+
+2026-02-17 17:47:01 WARN  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Warning, no ToDo tasks available for processing. Query below backend for more information
 
 {Collection Name=WorkItem-Service, Model Class=WorkItem, Repository Type=Item Store}
 
-2026-02-17 14:39:15 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Processing workload of size:   '4'
-2026-02-17 14:39:15 INFO  [ pool-2-thread-1 -> org.tasktide.engine.worker.executor.TaskTideExecutor.runTasks ]: Begining workload processing of N = '1' tasks
-2026-02-17 14:39:15 INFO  [ pool-2-thread-1 -> org.tasktide.engine.observer.worker.TimeKeeperObserver.evaluateStart ]: TimeKeeper evaluating starting of task 'WorkItem-bf2f5696-84df-4bc9-a800-b669fed8bba0'
-2026-02-17 14:39:15 INFO  [ pool-2-thread-1 -> org.tasktide.engine.observer.worker.TimeKeeperObserver.evaluateStart ]: Atomic TimeKeeper for task 'WorkItem-bf2f5696-84df-4bc9-a800-b669fed8bba0' set on thread 'pool-2-thread-1'
-2026-02-17 14:39:15 INFO  [ pool-2-thread-1 -> org.tasktide.engine.observer.worker.TimeKeeperObserver.onTaskStart ]: TimeKeeper evaluated time left for processing as 'true' for ItemTask:    'WorkItem-bf2f5696-84df-4bc9-a800-b669fed8bba0'
-2026-02-17 14:39:15 INFO  [ main -> org.tasktide.engine.TaskTideEngineUtility.waitOnExecutorTrackerWorkItem ]: Begining state monitoring of ExecutorServiceTracker:   N tasks = '3'
-2026-02-17 14:39:15 INFO  [ main -> org.tasktide.engine.TaskTideEngineUtility.waitOnExecutorTrackerWorkItem ]: Letting '10000'ms elapse for state monitoring of ExecutorServiceTracker:       '3'
-2026-02-17 14:39:15 DEBUG [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForLock ]: Waiting for
-2026-02-17 14:39:15 INFO  [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForMutex ]: Acquiring mutex
-2026-02-17 14:39:17 INFO  [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForMutex ]: Mutex acquired
-2026-02-17 14:39:17 INFO  [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.releaseMutex ]: Releasing mutex
-2026-02-17 14:39:17 INFO  [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.releaseMutex ]: Released mutex
-2026-02-17 14:39:17 DEBUG [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForLock ]: Waiting for
-2026-02-17 14:39:17 INFO  [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForMutex ]: Acquiring mutex
-2026-02-17 14:39:19 INFO  [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForMutex ]: Mutex acquired
-2026-02-17 14:39:19 INFO  [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.releaseMutex ]: Releasing mutex
-2026-02-17 14:39:20 INFO  [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.releaseMutex ]: Released mutex
-2026-02-17 14:39:20 DEBUG [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForLock ]: Waiting for
-2026-02-17 14:39:20 INFO  [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForMutex ]: Acquiring mutex
-2026-02-17 14:39:22 INFO  [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForMutex ]: Mutex acquired
-2026-02-17 14:39:22 INFO  [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.releaseMutex ]: Releasing mutex
-2026-02-17 14:39:22 INFO  [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.releaseMutex ]: Released mutex
-2026-02-17 14:39:23 DEBUG [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForLock ]: Waiting for
-2026-02-17 14:39:23 INFO  [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForMutex ]: Acquiring mutex
-2026-02-17 14:39:25 INFO  [ main -> org.tasktide.engine.TaskTideEngineUtility.waitOnExecutorTrackerWorkItem ]: Displaying Iter-'0' StateSummary of ExecutorServiceTracker:
 
-Total='3', Remaining='3', Done='0', Expected='4'
-2026-02-17 14:39:25 INFO  [ main -> org.tasktide.engine.TaskTideEngineUtility.waitOnExecutorTrackerWorkItem ]: Letting '10000'ms elapse for state monitoring of ExecutorServiceTracker:       '3'
-2026-02-17 14:39:25 INFO  [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForMutex ]: Mutex acquired
-2026-02-17 14:39:25 INFO  [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.releaseMutex ]: Releasing mutex
-2026-02-17 14:39:26 INFO  [ pool-2-thread-1 -> org.tasktide.itemstore.AbstractItemStore.releaseMutex ]: Released mutex
-2026-02-17 14:39:26 INFO  [ pool-2-thread-1 -> org.tasktide.engine.worker.executor.WorkItemExecutor.executeTask ]: Configuring ItemTaskProcessor for Workload of size '1' on thread 'pool-2-thread-1' for WorkItem:   'WorkItem-bf2f5696-84df-4bc9-a800-b669fed8bba0'
-2026-02-17 14:39:26 INFO  [ pool-2-thread-1 -> org.tasktide.engine.worker.executor.WorkItemExecutor.executeTask ]: Processor configured, processing workload for WorkItem:    'WorkItem-bf2f5696-84df-4bc9-a800-b669fed8bba0'
-2026-02-17 14:39:26 INFO  [ pool-2-thread-1 -> org.tasktide.engine.worker.processor.TaskTideProcessor.process ]: Processing tasks of workload thread:'pool-2-thread-1', Size='1', First ItemId = 'ItemTask-28d3b2a0-be8d-4107-98b6-303a89667f84'
-2026-02-17 14:39:26 WARN  [ pool-2-thread-1 -> org.tasktide.engine.worker.processor.TaskTideProcessor.process ]: Warning, workload size '1' < threshold '2' at start-up. Enqueing all tasks
-2026-02-17 14:39:26 INFO  [ pool-2-thread-1 -> org.tasktide.engine.worker.executor.WorkItemExecutor.executeTask ]: ExecutorObserver polling ItemTaskStateSummary for WorkItem:        'WorkItem-bf2f5696-84df-4bc9-a800-b669fed8bba0'
-2026-02-17 14:39:26 INFO  [ pool-2-thread-1 -> org.tasktide.engine.observer.worker.executor.WorkItemExecutorObserver.pollUntilDone ]: Begining state monitoring of WorkItem:  'WorkItem-bf2f5696-84df-4bc9-a800-b669fed8bba0'
-2026-02-17 14:39:26 INFO  [ pool-2-thread-1 -> org.tasktide.engine.observer.worker.executor.WorkItemExecutorObserver.pollUntilDone ]: Letting '10000'ms elapse for state monitoring of WorkItem:      'WorkItem-bf2f5696-84df-4bc9-a800-b669fed8bba0'
-2026-02-17 14:39:26 INFO  [ pool-3-thread-1 -> org.tasktide.engine.worker.processor.TaskTideProcessor.process ]: Processing tasks of workload thread:'pool-3-thread-1', Size='1', First ItemId = 'ItemTask-28d3b2a0-be8d-4107-98b6-303a89667f84'
-2026-02-17 14:39:26 INFO  [ pool-3-thread-1 -> org.tasktide.engine.worker.executor.TaskTideExecutor.runTasks ]: Begining workload processing of N = '1' tasks
-2026-02-17 14:39:26 INFO  [ pool-3-thread-1 -> org.tasktide.engine.observer.worker.TimeKeeperObserver.evaluateStart ]: TimeKeeper evaluating starting of task 'ItemTask-28d3b2a0-be8d-4107-98b6-303a89667f84'
-2026-02-17 14:39:26 INFO  [ pool-3-thread-1 -> org.tasktide.engine.observer.worker.TimeKeeperObserver.evaluateStart ]: Atomic TimeKeeper for task 'ItemTask-28d3b2a0-be8d-4107-98b6-303a89667f84' set on thread 'pool-3-thread-1'
-2026-02-17 14:39:26 INFO  [ pool-3-thread-1 -> org.tasktide.engine.observer.worker.TimeKeeperObserver.onTaskStart ]: TimeKeeper evaluated time left for processing as 'true' for ItemTask:    'ItemTask-28d3b2a0-be8d-4107-98b6-303a89667f84'
-2026-02-17 14:39:26 INFO  [ pool-3-thread-1 -> org.tasktide.engine.worker.executor.ItemTaskExecutor.executeTask ]: Executing task on thread 'pool-3-thread-1':ping tcd.ie
-2026-02-17 14:39:26 DEBUG [ pool-3-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForLock ]: Waiting for
-2026-02-17 14:39:26 INFO  [ pool-3-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForMutex ]: Acquiring mutex
-2026-02-17 14:39:28 INFO  [ pool-3-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForMutex ]: Mutex acquired
-2026-02-17 14:39:28 INFO  [ pool-3-thread-1 -> org.tasktide.itemstore.AbstractItemStore.releaseMutex ]: Releasing mutex
-2026-02-17 14:39:28 INFO  [ pool-3-thread-1 -> org.tasktide.itemstore.AbstractItemStore.releaseMutex ]: Released mutex
-2026-02-17 14:39:28 DEBUG [ pool-3-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForLock ]: Waiting for
-2026-02-17 14:39:28 INFO  [ pool-3-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForMutex ]: Acquiring mutex
-2026-02-17 14:39:30 INFO  [ pool-3-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForMutex ]: Mutex acquired
-2026-02-17 14:39:30 INFO  [ pool-3-thread-1 -> org.tasktide.itemstore.AbstractItemStore.releaseMutex ]: Releasing mutex
-2026-02-17 14:39:30 INFO  [ pool-3-thread-1 -> org.tasktide.itemstore.AbstractItemStore.releaseMutex ]: Released mutex
-2026-02-17 14:39:30 DEBUG [ pool-3-thread-1 -> org.tasktide.itemstore.AbstractItemStore.waitForLock ]: Waiting for
-
+2026-02-17 17:47:01 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Processing complete for step:      'PingTest'
 ''
 
 
