@@ -419,7 +419,17 @@ echo -e "WorkItem-d1ec0e17-b7d0-4ca6-812b-0af8f76bb5e8\\nWorkItem-b83c5350-43ca-
   --target-file "../../../tasktide/tasktide/src/test/resources/singleTaskImports.txt"
 
 
+# All tasks processed on pool-3-thread-1
+echo -e "SELECT Payload FROM Items;" | \
+  sqlite3 itemStoreRepo/sqlite/WORKITEM/master | \
+  grep "ThreadName" | sort | uniq -c
+
+
 ''
+ 3       "ThreadName": "NA"
+13       "ThreadName": "pool-3-thread-1"
+     
+
 
 2026-02-17 17:37:51 WARN  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Warning, no ToDo tasks available for processing. Query below backend for more information
 
