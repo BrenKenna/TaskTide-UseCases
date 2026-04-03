@@ -13,7 +13,7 @@ echo -e "SELECT Payload FROM Items;" | \
 
 # Fetch tasks, and process states
 echo -e "SELECT Payload FROM Items;" | \
-  sqlite3 itemStoreRepo/sqlite/WORKITEM/master | \
+  sqlite3 ItemStoreRepository/sqlite/WORKITEM/master | \
   jq '{
     Id: .Id,
     State: .ItemState,
@@ -26,6 +26,8 @@ echo -e "SELECT Payload FROM Items;" | \
           ExitCode: .value["Task Log"]["Exit Code"],
           ProcessId: .value["Task Log"]["Process Id"],
           TaskState: .value["Task Log"]["Task State"],
-          ThreadName: .value["Task Log"]["Thread Name"]
+          ThreadName: .value["Task Log"]["Thread Name"],
+          EndTime: .value["Task Log"]["End Time"],
+          StartTime: .value["Task Log"]["Start Time"]
         })
     )}'
