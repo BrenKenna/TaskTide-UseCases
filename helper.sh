@@ -583,3 +583,20 @@ echo -e "SELECT payload FROM Items WHERE State = 'ToDo' State LIMIT 1;" | sqlite
 sed -i 's/tasktide\.client=manager/tasktide\.client=engine/' $CONFIG
 
 ..\..\tasktide-0.9.0\bin\tasktide.bat # In windows
+
+
+
+
+#########################################
+#########################################
+## 
+## Private Key for Unit Testing
+## 
+#########################################
+#########################################
+
+
+# Generate key
+cd tasktide/api/src/test/resources
+openssl genrsa -out privateKey.pem 2048
+openssl rsa -in privateKey.pem -pubout -out publicKey.pem
