@@ -40,6 +40,22 @@ curl -X GET http://admin:password@localhost:5984/_all_dbs
 curl -X GET http://admin:password@localhost:5984/tasktide_database/_all_docs
 
 
+
+curl -v \
+  -X GET \
+  http://localhost:8080/services/step/get?id=Step-940d4f81-9636-439b-86ea-eed198bee09b
+
+
+curl -v \
+  -X DELETE \
+  http://localhost:8080/services/step/drop/Step-4de8b16d-6fcf-44b0-a8e2-7e8aaad05f6b
+
+
+curl -v \
+  -X POST \
+  http://localhost:8080/services/step/create-step?stepName="doggie"
+
+
 # Run image
 docker run -d -p 8529:8529 -e ARANGO_RANDOM_ROOT_PASSWORD=password --name arangodb-instance arangodb
 
