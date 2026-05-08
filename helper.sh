@@ -56,6 +56,7 @@ curl -v \
   http://localhost:8080/services/step/create-step?stepName="doggie"
 
 
+
 # Run image
 docker run -d -p 8529:8529 -e ARANGO_RANDOM_ROOT_PASSWORD=password --name arangodb-instance arangodb
 
