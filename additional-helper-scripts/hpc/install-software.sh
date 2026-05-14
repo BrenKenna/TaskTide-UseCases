@@ -118,3 +118,74 @@ cd .. && rm -fr samblaster
 cd $SOFT/bin
 wget https://sourceforge.net/projects/bio-bwa/files/bwakit/bwakit-0.7.15_x64-linux.tar.bz2/download
 tar -xvf download && rm -f download
+
+
+
+
+#################################
+#################################
+## 
+## a). TaskTide
+## 
+#################################
+#################################
+
+
+# Back up config
+cp $TASK_TIDE_CONF $TASK_TIDE/microprofile-config.properties
+
+
+# TaskTide
+cd $JAVA_MODULES
+# mv ~/tasktide-0.9.5.zip ./
+# wget https://github.com/BrenKenna/TaskTide/releases/download/v0.9.0/tasktide-0.9.0.zip
+rm -fr tasktide-0.9.0/ tasktide-0.9.5/ 
+unzip tasktide-0.9.5.zip && rm -f tasktide-0.9.5.zip && cd tasktide-0.9.5
+rm -f $SOFT/bin/tasktide
+ln -sf $JAVA_MODULES/tasktide-0.9.5/bin/tasktide $SOFT/bin/tasktide
+
+mkdir jnosql-libs
+mv lib/jnosql-arangodb-1.1.6.jar jnosql-libs/
+mv lib/jnosql-cassandra-1.1.6.jar jnosql-libs/
+mv lib/jnosql-couchbase-1.1.6.jar jnosql-libs/
+mv lib/jnosql-dynamodb-1.1.6.jar jnosql-libs/
+mv lib/jnosql-mongodb-1.1.6.jar jnosql-libs/
+mv lib/jnosql-redis-1.1.6.jar jnosql-libs/
+mv lib/jnosql-couchdb-1.1.6.jar jnosql-libs/
+mv lib/jnosql-mapping-graph-1.1.8.jar jnosql-libs/
+mv lib/jnosql-mapping-key-value-1.1.8.jar jnosql-libs/
+mv lib/jnosql-mapping-column-1.1.8.jar jnosql-libs/
+
+cp $TASK_TIDE/microprofile-config.properties $TASK_TIDE_CONF
+cd $TASK_TIDE
+
+
+
+#################################
+#################################
+## 
+## b). Spark
+## 
+#################################
+#################################
+
+
+
+# Install spark
+cd $SOFT
+wget https://archive.apache.org/dist/spark/spark-3.5.6/spark-3.5.6-bin-hadoop3-scala2.13.tgz
+tar -xzf spark-3.5.6-bin-hadoop3-scala2.13.tgz \
+    && mv spark-3.5.6-bin-hadoop3-scala2.13 spark-3.5.6
+
+
+# Fetch RAPIDS and XGBoost
+wget https://repo1.maven.org/maven2/com/nvidia/rapids-4-spark_2.13/25.08.0/rapids-4-spark_2.13-25.08.0.jar
+wget https://repo1.maven.org/maven2/com/nvidia/xgboost4j-spark_3.0/1.4.2-0.3.0/xgboost4j-spark_3.0-1.4.2-0.3.0.jar
+mv rapids-4-spark_2.13-25.08.0.jar spark-3.5.6/jars/
+mv xgboost4j-spark_3.0-1.4.2-0.3.0.jar spark-3.5.6/jars/
+
+
+# Start rapids backed session
+sparkR \
+    --conf spark.plugins=com.nvidia.spark.SQLPlugin \
+    --conf spark.rapids.sql.enabled=true

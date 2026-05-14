@@ -34,7 +34,7 @@
   --delimiter "|" \
   --target "WORKITEM" \
   --step-name "PingTest" \
-  --target-file "../../../tasktide/tasktide/src/test/resources/singleTaskImports.txt"
+  --target-file "./singleTaskImports.txt"
 
 echo -e "SELECT Auto_Id, Id, State, Collection FROM Items;" | sqlite3 ItemStoreRepo/sqlite/WORKITEM/master
 echo -e "WorkItem-4597f006-85ec-490e-821a-c949d6c6e5cb\\nWorkItem-c145263c-0456-4abf-bf7d-ed89e12b9963" > forAnno.txt
@@ -49,7 +49,7 @@ echo -e "WorkItem-4597f006-85ec-490e-821a-c949d6c6e5cb\\nWorkItem-c145263c-0456-
   --delimiter "json" \
   --target "WORKITEM" \
   --step-name "SequenceAlignment" \
-  --target-file "../../../tasktide/tasktide/src/test/resources/import-docs.json"
+  --target-file "./import-docs.json"
 
 
 # Nested workload
@@ -62,7 +62,7 @@ echo -e "WorkItem-4597f006-85ec-490e-821a-c949d6c6e5cb\\nWorkItem-c145263c-0456-
   --nested-delimiter "," \
   --target "WORKITEM" \
   --step-name "PingTest" \
-  --target-file "../../../tasktide/tasktide/src/test/resources/nestedTaskImports.txt"
+  --target-file "./nestedTaskImports.txt"
 
 
 
@@ -90,30 +90,6 @@ echo -e "WorkItem-4597f006-85ec-490e-821a-c949d6c6e5cb\\nWorkItem-c145263c-0456-
 echo -e "SELECT Payload FROM Items;" | sqlite3 ItemStoreRepo/sqlite/WORKITEM/master | \
   jq '{ItemName: .ItemName, Id: .Id, Annotations: .annotations.Annotations."Pilot Label"}'
 
-''' ---> Quite a few elections
-
-{
-  "ItemName": "Ping_Test_1",
-  "Id": "WorkItem-d1ec0e17-b7d0-4ca6-812b-0af8f76bb5e8",
-  "PilotLabel": null
-}
-{
-  "ItemName": "Ping_Test_2",
-  "Id": "WorkItem-b83c5350-43ca-4f76-b3e8-fc6846e11c1d",
-  "PilotLabel": null
-}
-{
-  "ItemName": "Ping_Test_4",
-  "Id": "WorkItem-8f85fa38-206c-43e0-b3fb-cb6f84187589",
-  "PilotLabel": null
-}
-{
-  "ItemName": "Ping_Test_3",
-  "Id": "WorkItem-551c79d9-c2dc-48a5-b146-db602a737792",
-  "PilotLabel": "WSL Test"
-}
-
-'''
 
 
 ####################################
@@ -276,41 +252,6 @@ echo -e "WorkItem-d1ec0e17-b7d0-4ca6-812b-0af8f76bb5e8\\nWorkItem-b83c5350-43ca-
   --target-file "./forDeletion.txt"
 
 
-''
-
-2026-02-17 12:28:43 INFO  [ main -> org.tasktide.tasktide.client.TaskTideManagerClient.performClientTask ]: Displaying results: '{
-    "DoneDate": 0,
-    "Id": "WorkItem-8f85fa38-206c-43e0-b3fb-cb6f84187589",
-    "ItemName": "Ping_Test_4",
-    "ItemState": "TODO",
-    "ItemType": "SINGLE",
-    "Job Environment Id": "",
-    "LockDate": 0,
-    "LockId": "",
-    "StepId": "Step-c90f12f6-4b49-4ee3-9a1b-f06b5acaea39",
-    "StepName": "PingTest",
-    "TaskCount": 0,
-    "TaskDone": 0,
-    "Workload": {
-        "TaskMap": {
-        },
-        "WorkloadType": "SINGLE",
-        "earliestDone": -1,
-        "id": "Workload-32773f54-3820-4210-9be8-d524abf58106",
-        "latestDone": 0,
-        "workloadSize": 0
-    },
-    "annotations": {
-        "Annotations": {
-        }
-    },
-    "collection": "PingTest",
-    "workloadSize": 0
-}'
-
-''
-
-
 
 ####################################
 ####################################
@@ -342,12 +283,6 @@ echo -e "WorkItem-d1ec0e17-b7d0-4ca6-812b-0af8f76bb5e8\\nWorkItem-b83c5350-43ca-
   --import-string '{"Parameter": "State", "Value": "ToDo"}' \
   --target-file "./todo-items-output.json"
 
-
-'''
-
-2026-02-17 12:45:13 INFO  [ main -> org.tasktide.core.manager.command.commands.ExportCommand.exportOnQuery ]: Retrieved '0' records for export to:      './todo-items-output.json'
-
-'''
 
 
 ######################################################
@@ -423,39 +358,3 @@ echo -e "WorkItem-d1ec0e17-b7d0-4ca6-812b-0af8f76bb5e8\\nWorkItem-b83c5350-43ca-
 echo -e "SELECT Payload FROM Items;" | \
   sqlite3 itemStoreRepo/sqlite/WORKITEM/master | \
   grep "ThreadName" | sort | uniq -c
-
-
-''
- 3       "ThreadName": "NA"
-13       "ThreadName": "pool-3-thread-1"
-     
-
-
-2026-02-17 17:37:51 WARN  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Warning, no ToDo tasks available for processing. Query below backend for more information
-
-{Collection Name=WorkItem-Service, Model Class=WorkItem, Repository Type=Item Store}
-
-
-2026-02-17 17:37:51 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Processing complete for step:      'PingTest'
-2026-02-17 17:37:52 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Determing how to process workload
-2026-02-17 17:37:52 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Processing single step:    'PingTest'
-2026-02-17 17:37:52 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchWorkload ]: No pilot label provided, processing all tasks       
-
-2026-02-17 17:39:09 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Processing workload of size:   '4'
-2026-02-17 17:39:09 INFO  [ main -> org.tasktide.engine.worker.processor.TaskTideProcessor.processChunks ]: Shuffling, and grouping workload for ExecutorService for ProcessorType:        'WorkItemProcessor'
-2026-02-17 17:39:09 INFO  [ main -> org.tasktide.engine.worker.processor.WorkItemProcessor.parallelChunks ]: Fetching N = '5' batches of size '1' for WorkItem workload
-2026-02-17 17:39:09 INFO  [ main -> org.tasktide.engine.worker.processor.TaskTideProcessor.processChunks ]: Submitting 'WorkItemProcessor' workload of size:       '4'
-2026-02-17 17:39:09 INFO  [ main -> org.tasktide.engine.worker.processor.TaskTideProcessor.submitParallelChunks ]: Submitting sub-workload of size:     '1'
-2026-02-17 17:39:09 INFO  [ pool-2-thread-1 -> org.tasktide.engine.worker.executor.TaskTideExecutor.runTasks ]: Begining workload processing of N = '1' tasks
-2026-02-17 17:39:09 INFO  [ pool-2-thread-1 -> org.tasktide.engine.observer.worker.TimeKeeperObserver.evaluateStart ]: TimeKeeper evaluating starting of task 'WorkItem-22e95dad-2062-42c2-81c6-b1a9fd98ce71'
-
-
-2026-02-17 17:47:01 WARN  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.processWorkload ]: Warning, no ToDo tasks available for processing. Query below backend for more information
-
-{Collection Name=WorkItem-Service, Model Class=WorkItem, Repository Type=Item Store}
-
-
-2026-02-17 17:47:01 INFO  [ main -> org.tasktide.tasktide.client.TaskTideEngineClient.fetchAndRun ]: Processing complete for step:      'PingTest'
-''
-
-
