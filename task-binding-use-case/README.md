@@ -1,0 +1,8 @@
+# Task Binding Semantics
+<p id="task-binding">
+The purpose of this use case was to explicitly evaluate the early binding semantics of TaskTide in two ways. One manner emulates an interactive Data Application Layer session, without explicitly managing one. Developed using a Julia function runner which deserailizes and executes a function and its arguments as a task, packaged in singularity container (Kurtzer et al., 2017). It should be noted that such a solution is well covered by frameworks like Parallel Server with Matlab, Distributed.jl package for Julia, and services such as Livy backed Jupyter Notebooks (Amazon Web Services, 2025; Gevorkyan et al., 2014; Sharma & Martin, 2009). The benefit of such a use-case is towards scoping the “best use” of TaskTide, as well as feature/UI development leading to the adoption of batch or service execution policy of the TaskTide-Engine.
+</p>
+
+<p id="task-binding-1">
+Early binding semantics were also evaluated through the use of pilot label annotations on tasks, which can be provided to different of the TaskTide-Engine at runtime to determine which ones can process which sets of tasks. The application for this use case was a SparkR image analysis application which uses Spark-RAPIDS for GPU accelerated analyses (Corporation, 2025). Pilot label annotations on tasks for this use case, served to formally preassign tasks to hosts based on GPU characteristics.
+</p>
