@@ -1,0 +1,11 @@
+Sleep0|python /opt/tasktide-use-case/python-sleep.py 2
+Sleep1|python /opt/tasktide-use-case/python-sleep.py 4
+Sleep2|python /opt/tasktide-use-case/python-sleep.py 8
+Sleep3|python /opt/tasktide-use-case/python-sleep.py 16
+Sleep4|python /opt/tasktide-use-case/python-sleep.py 32
+Sleep5|python /opt/tasktide-use-case/python-sleep.py 64
+Sleep6|python /opt/tasktide-use-case/python-sleep.py 128
+Sleep7|python /opt/tasktide-use-case/python-sleep.py 256
+Sleep8|python /opt/tasktide-use-case/python-sleep.py 512
+Sleep9|python /opt/tasktide-use-case/python-sleep.py 1024
+Sleep10|python /opt/tasktide-use-case/python-sleep.py 2048

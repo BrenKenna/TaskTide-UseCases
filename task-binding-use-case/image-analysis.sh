@@ -123,7 +123,7 @@ Java ref type org.apache.spark.sql.SparkSession id 1
 export wrk=$DATA_DIR/image-analysis
 step="ImageStacker"
 width="325"
-heigtt="350"
+heigtt="650"
 
 cd $wrk
 mkdir -p $wrk/results/parquet

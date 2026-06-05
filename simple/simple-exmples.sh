@@ -1,0 +1,139 @@
+#!/bin/bash
+
+
+######################################################
+######################################################
+## 
+## a). Install Software on Rocky-10 WSL Host
+## 
+######################################################
+######################################################
+
+# Setup dnf
+dnf update -y && dnf upgrade -y
+dnf install -y epel-release
+dnf -y install dnf-plugins-core
+dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+dnf update -y
+
+dnf config-manager --set-enabled crb
+
+# Install R, Python, and latest Docker
+dnf install -y R python
+dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+dnf install -y rocksdb rocksdb-devel
+
+
+# Convenience symbolic link for python
+ln -sf /bin/python3 /bin/python
+chmod +x /bin/python
+
+
+# Check java version and setup opt
+java --version
+
+mkdir /opt/java_modules
+chmod 777 /opt/java_modules
+
+
+# Install task tide
+cd /opt/java_modules/
+cp /mnt/c/Users/Bren/Documents/GitHub/TaskTide/tasktide/tasktide/build/distributions/tasktide-0.9.5.zip ./
+unzip tasktide-0.9.5.zip && rm -f tasktide-0.9.5.zip
+
+
+# Symbolic link for TaskTide
+rm -f /bin/tasktide
+ln -sf /opt/java_modules/tasktide-0.9.5/bin/tasktide /bin/tasktide
+chmod +x /bin/tasktide
+
+
+# Copy use case scripts
+mkdir -p /opt/tasktide-use-case
+cp /mnt/c/Users/Bren/Documents/GitHub/TaskTide/tasktide/use-cases/simple/* /opt/tasktide-use-case/
+chown -R bren:bren /opt/tasktide-use-case/
+
+
+###################################################
+###################################################
+## 
+## b). Import Tasks
+## 
+###################################################
+###################################################
+
+# Set working directory
+export wrk="/opt/tasktide-use-case"
+cd $wrk
+
+
+# Import R version jobs
+tasktide \
+    manager \
+        --repository-type "rocksDB" \
+        --file-path "$wrk/tasktide-rocksDB" \
+        --method "Import" \
+        --delimiter "|" \
+        --nested-delimiter "," \
+        --target "WORKITEM" \
+        --step-name "Rscript-Jobs" \
+        --target-file $wrk/stringVersionTasks.txt
+
+
+
+# Run engine
+tasktide \
+    engine \
+        --repository-type "rocksDB" \
+        --file-path "$wrk/tasktide-rocksDB" \
+        --target "WORKITEM" \
+        --step-name "Rscript-Jobs"
+
+
+tasktide \
+    manager \
+        --repository-type "rocksDB" \
+        --file-path "$wrk/tasktide-rocksDB" \
+        --method "Summarize" \
+        --target "WORKITEM" \
+        --step-name "Rscript-Jobs"
+
+
+rm -f "$wrk/Rscript-Jobs.json"
+tasktide \
+    manager \
+    --repository-type "rocksDB" \
+    --file-path "$wrk/tasktide-rocksDB" \
+    --target "WORKITEM" \
+    --step-name "Rscript-Jobs" \
+    --method "Export" \
+    --target-file "$wrk/Rscript-Jobs.json"
+
+seq 10
+
+cat "$wrk/Rscript-Jobs.json"
+
+
+# Import sleep jobs to evaluate engine running until jobs are done
+tasktide \
+    manager \
+        --repository-type "sqlite" \
+        --file-path "$wrk/tasktide-sqlite" \
+        --method "Import" \
+        --delimiter "|" \
+        --target "WORKITEM" \
+        --step-name "SleepJobs" \
+        --target-file "$wrk/sleepTasks.txt"
+
+echo -e "SELECT Payload FROM Items;" | \
+  sqlite3 tasktide-sqlite/WORKITEM/master
+
+
+# Run engine
+tasktide \
+    engine \
+        --repository-type "sqlite" \
+        --file-path "$wrk/tasktide-sqlite" \
+        --target "WORKITEM" \
+        --step-name "SleepJobs"
+
