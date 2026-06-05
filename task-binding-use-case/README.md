@@ -4,5 +4,5 @@ The purpose of this use case was to explicitly evaluate the early binding semant
 </p>
 
 <p id="task-binding-1">
-Early binding semantics were also evaluated through the use of pilot label annotations on tasks, which can be provided to different of the TaskTide-Engine at runtime to determine which ones can process which sets of tasks. The application for this use case was a SparkR image analysis application which uses Spark-RAPIDS for GPU accelerated analyses (Corporation, 2025). Pilot label annotations on tasks for this use case, served to formally preassign tasks to hosts based on GPU characteristics.
+Early binding semantics were also evaluated through the use of pilot label annotations on tasks, which can be provided to different of the TaskTide-Engine at runtime to determine which ones can process which sets of tasks. The application for this use case was a SparkR image analysis application which uses Spark to perform operations on provided image, generate an image from RGB expressions, and stack them row-wise into a parquet format. Pilot label annotations on tasks for this use case, served to formally preassign tasks based on instances tagged with a pilot label. It is instead recommended to use a distinct Step collection instead of task annotation.
 </p>

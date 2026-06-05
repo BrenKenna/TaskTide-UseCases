@@ -101,7 +101,7 @@ ImageProcessor$methods(
     lg <- .self$getLogger()
     lg$info(clazz, "startSpark", "Starting Spark session with RAPIDS enabled")
     SparkR::sparkR.session(
-      master = "local[*]",
+      master = "local-cluster[2,1,4096]",
       appName = "ImageProcessorRAPIDS",
       sparkConfig = list(
         spark.plugins = "com.nvidia.spark.SQLPlugin",
