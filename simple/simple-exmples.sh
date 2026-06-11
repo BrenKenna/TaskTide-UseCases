@@ -50,7 +50,7 @@ chmod +x /bin/tasktide
 
 # Copy use case scripts
 mkdir -p /opt/tasktide-use-case
-cp /mnt/c/Users/Bren/Documents/GitHub/TaskTide/tasktide/use-cases/simple/* /opt/tasktide-use-case/
+cp /mnt/c/Users/Bren/Documents/GitHub/TaskTide/tasktide/use-cases/simple/*txt /opt/tasktide-use-case/
 chown -R bren:bren /opt/tasktide-use-case/
 
 
@@ -77,8 +77,7 @@ tasktide \
         --nested-delimiter "," \
         --target "WORKITEM" \
         --step-name "Rscript-Jobs" \
-        --target-file $wrk/stringVersionTasks.txt
-
+        --target-file "$wrk/stringVersionTasks.txt"
 
 
 # Run engine
@@ -87,7 +86,9 @@ tasktide \
         --repository-type "rocksDB" \
         --file-path "$wrk/tasktide-rocksDB" \
         --target "WORKITEM" \
-        --step-name "Rscript-Jobs"
+        --step-name "Rscript-Jobs" \
+        --worker-pool-size "3" \
+        --worker-window-size "2"
 
 
 tasktide \

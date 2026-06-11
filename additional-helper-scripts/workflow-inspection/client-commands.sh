@@ -104,23 +104,23 @@ echo -e "SELECT Payload FROM Items;" | sqlite3 ItemStoreRepo/sqlite/WORKITEM/mas
 # Summarize step
 ./bin/tasktide \
   manager \
-  --repository-type "sqlite" \
-  --file-path "./ItemStoreRepo/sqlite" \
-  --method "Summarize" \
-  --target "WORKITEM" \
-  --target-file "./summaries.json" \
-  --step-name "PingTest"
+    --repository-type "sqlite" \
+    --file-path "./ItemStoreRepo/sqlite" \
+    --method "Summarize" \
+    --target "WORKITEM" \
+    --target-file "./summaries.json" \
+    --step-name "PingTest"
 
 
 # Summarize each
 ./bin/tasktide \
   manager \
-  --repository-type "sqlite" \
-  --file-path "./ItemStoreRepo/sqlite" \
-  --method "SUMMARIZE_EACH" \
-  --target "WORKITEM" \
-  --target-file "./summaries.json" \
-  --step-name "PingTest"
+    --repository-type "sqlite" \
+    --file-path "./ItemStoreRepo/sqlite" \
+    --method "SUMMARIZE_EACH" \
+    --target "WORKITEM" \
+    --target-file "./summaries.json" \
+    --step-name "PingTest"
 
 
 ''
@@ -189,12 +189,12 @@ echo -e "SELECT Payload FROM Items;" | sqlite3 ItemStoreRepo/sqlite/WORKITEM/mas
 # Restart specific task: Calls method on WorkItem
 ./bin/tasktide \
   manager \
-  --repository-type "sqlite" \
-  --file-path "./ItemStoreRepo/sqlite" \
-  --target "WORKITEM" \
-  --step-name "PingTest" \
-  --method "Reset_Item" \
-  --itemId "WorkItem-73121c61-90b0-4339-88e8-e41316a1a334"
+    --repository-type "sqlite" \
+    --file-path "./ItemStoreRepo/sqlite" \
+    --target "WORKITEM" \
+    --step-name "PingTest" \
+    --method "Reset_Item" \
+    --itemId "WorkItem-73121c61-90b0-4339-88e8-e41316a1a334"
 
 echo -e "SELECT * FROM Items WHERE Id = 'WorkItem-85dfcc13-d7a5-40a7-a028-1db4cfaf9774';" | sqlite3 ItemStoreRepo/sqlite/WORKITEM/master
 echo -e "SELECT * FROM Items WHERE Id = 'WorkItem-85dfcc13-d7a5-40a7-a028-1db4cfaf9774';" | sqlite3 ItemStoreRepo/sqlite/WORKITEM/master
@@ -210,13 +210,13 @@ echo -e "WorkItem-73121c61-90b0-4339-88e8-e41316a1a334,ItemTask-341b17f0-52a6-4a
 
 ./bin/tasktide \
   manager \
-  --repository-type "sqlite" \
-  --file-path "./ItemStoreRepo/sqlite" \
-  --target "WORKITEM" \
-  --step-name "PingTest" \
-  --method "Reset_Items" \
-  --target-file "./forReset.txt" \
-  --delimiter ","
+    --repository-type "sqlite" \
+    --file-path "./ItemStoreRepo/sqlite" \
+    --target "WORKITEM" \
+    --step-name "PingTest" \
+    --method "Reset_Items" \
+    --target-file "./forReset.txt" \
+    --delimiter ","
 
 
 
@@ -232,24 +232,24 @@ echo -e "WorkItem-73121c61-90b0-4339-88e8-e41316a1a334,ItemTask-341b17f0-52a6-4a
 # Delete WorkItem, ItemTask, List
 ./bin/tasktide \
   manager \
-  --repository-type "sqlite" \
-  --file-path "./ItemStoreRepo/sqlite" \
-  --method "DELETE" \
-  --target "WORKITEM" \
-  --step-name "PingTest" \
-  --import-string '{ "Item Id": "WorkItem-8f85fa38-206c-43e0-b3fb-cb6f84187589", "Task Name": "Ping_Test_4" }'
+    --repository-type "sqlite" \
+    --file-path "./ItemStoreRepo/sqlite" \
+    --method "DELETE" \
+    --target "WORKITEM" \
+    --step-name "PingTest" \
+    --import-string '{ "Item Id": "WorkItem-8f85fa38-206c-43e0-b3fb-cb6f84187589", "Task Name": "Ping_Test_4" }'
 
 
 echo -e "WorkItem-d1ec0e17-b7d0-4ca6-812b-0af8f76bb5e8\\nWorkItem-b83c5350-43ca-4f76-b3e8-fc6846e11c1d|ItemTask-969f97c8-b78d-4c78-9f89-dfedb7505834" > ./forDeletion.txt
 ./bin/tasktide \
   manager \
-  --repository-type "sqlite" \
-  --file-path "./ItemStoreRepo/sqlite" \
-  --method "DELETE_LIST" \
-  --target "WORKITEM" \
-  --step-name "PingTest" \
-  --delimiter "|" \
-  --target-file "./forDeletion.txt"
+    --repository-type "sqlite" \
+    --file-path "./ItemStoreRepo/sqlite" \
+    --method "DELETE_LIST" \
+    --target "WORKITEM" \
+    --step-name "PingTest" \
+    --delimiter "|" \
+    --target-file "./forDeletion.txt"
 
 
 
@@ -265,23 +265,23 @@ echo -e "WorkItem-d1ec0e17-b7d0-4ca6-812b-0af8f76bb5e8\\nWorkItem-b83c5350-43ca-
 # Export - Drop paramter check on Validation Export
 ./bin/tasktide \
   manager \
-  --repository-type "sqlite" \
-  --file-path "./ItemStoreRepo/sqlite" \
-  --target "WORKITEM" \
-  --step-name "PingTest" \
-  --method "Export" \
-  --target-file "./ping-test-workitems.json"
+    --repository-type "sqlite" \
+    --file-path "./ItemStoreRepo/sqlite" \
+    --target "WORKITEM" \
+    --step-name "PingTest" \
+    --method "Export" \
+    --target-file "./ping-test-workitems.json"
 
 
 ./bin/tasktide \
   manager \
-  --repository-type "sqlite" \
-  --file-path "./ItemStoreRepo/sqlite" \
-  --target "WORKITEM" \
-  --step-name "PingTest" \
-  --method "Export_Query" \
-  --import-string '{"Parameter": "State", "Value": "ToDo"}' \
-  --target-file "./todo-items-output.json"
+    --repository-type "sqlite" \
+    --file-path "./ItemStoreRepo/sqlite" \
+    --target "WORKITEM" \
+    --step-name "PingTest" \
+    --method "Export_Query" \
+    --import-string '{"Parameter": "State", "Value": "ToDo"}' \
+    --target-file "./todo-items-output.json"
 
 
 
@@ -309,11 +309,11 @@ echo -e "WorkItem-d1ec0e17-b7d0-4ca6-812b-0af8f76bb5e8\\nWorkItem-b83c5350-43ca-
 # Run engine in batch mode
 ./bin/tasktide \
   engine \
-  --repository-type "sqlite" \
-  --file-path "./ItemStoreRepo/sqlite" \
-  --target "WORKITEM" \
-  --step-name "PingTest" \
-  --work-item-threads 5
+    --repository-type "sqlite" \
+    --file-path "./ItemStoreRepo/sqlite" \
+    --target "WORKITEM" \
+    --step-name "PingTest" \
+    --work-item-threads 5
 
 ''' --> Hangs when #Threads > #Available Tasks
 
@@ -335,23 +335,23 @@ echo -e "WorkItem-d1ec0e17-b7d0-4ca6-812b-0af8f76bb5e8\\nWorkItem-b83c5350-43ca-
 # Run engine as a service
 ./bin/tasktide \
   engine \
-  --repository-type "sqlite" \
-  --file-path "./ItemStoreRepo/sqlite" \
-  --target "WORKITEM" \
-  --step-name "PingTest" \
-  --execution-policy "service" \
-  --work-item-threads 5
+    --repository-type "sqlite" \
+    --file-path "./ItemStoreRepo/sqlite" \
+    --target "WORKITEM" \
+    --step-name "PingTest" \
+    --execution-policy "service" \
+    --work-item-threads 5
 
 
 ./bin/tasktide \
   manager \
-  --repository-type "sqlite" \
-  --file-path "./ItemStoreRepo/sqlite" \
-  --method "Import" \
-  --delimiter "|" \
-  --target "WORKITEM" \
-  --step-name "PingTest" \
-  --target-file "../../../tasktide/tasktide/src/test/resources/singleTaskImports.txt"
+    --repository-type "sqlite" \
+    --file-path "./ItemStoreRepo/sqlite" \
+    --method "Import" \
+    --delimiter "|" \
+    --target "WORKITEM" \
+    --step-name "PingTest" \
+    --target-file "../../../tasktide/tasktide/src/test/resources/singleTaskImports.txt"
 
 
 # All tasks processed on pool-3-thread-1
