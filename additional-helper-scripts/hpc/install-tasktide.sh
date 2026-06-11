@@ -14,6 +14,7 @@ cp $TASK_TIDE_CONF $TASK_TIDE/microprofile-config.properties
 cd $JAVA_MODULES
 # mv ~/tasktide-0.9.5.zip ./
 # wget https://github.com/BrenKenna/TaskTide/releases/download/v0.9.0/tasktide-0.9.0.zip
+cp ~/tasktide-0.9.5.zip ./
 rm -fr tasktide-0.9.0/ tasktide-0.9.5/ 
 unzip tasktide-0.9.5.zip && rm -f tasktide-0.9.5.zip && cd tasktide-0.9.5
 rm -f $SOFT/bin/tasktide
@@ -31,6 +32,7 @@ mv lib/jnosql-couchdb-1.1.6.jar jnosql-libs/
 mv lib/jnosql-mapping-graph-1.1.8.jar jnosql-libs/
 mv lib/jnosql-mapping-key-value-1.1.8.jar jnosql-libs/
 mv lib/jnosql-mapping-column-1.1.8.jar jnosql-libs/
+
 
 cp $TASK_TIDE/microprofile-config.properties $TASK_TIDE_CONF
 cd $TASK_TIDE

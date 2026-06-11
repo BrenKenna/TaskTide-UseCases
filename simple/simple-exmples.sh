@@ -54,6 +54,18 @@ cp /mnt/c/Users/Bren/Documents/GitHub/TaskTide/tasktide/use-cases/simple/*txt /o
 chown -R bren:bren /opt/tasktide-use-case/
 
 
+# Spinup couchDB backend for testing
+docker container run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=password -p 5984:5984 couchdb:latest
+curl -X PUT http://admin:password@localhost:5984/tasktide_database
+
+curl -X GET http://admin:password@localhost:5984/_all_dbs | jq
+
+curl -X GET http://admin:password@localhost:5984/tasktide_database/_all_docs | jq
+
+
+
+
+
 ###################################################
 ###################################################
 ## 
@@ -70,8 +82,6 @@ cd $wrk
 # Import R version jobs
 tasktide \
     manager \
-        --repository-type "rocksDB" \
-        --file-path "$wrk/tasktide-rocksDB" \
         --method "Import" \
         --delimiter "|" \
         --nested-delimiter "," \
@@ -83,8 +93,6 @@ tasktide \
 # Run engine
 tasktide \
     engine \
-        --repository-type "rocksDB" \
-        --file-path "$wrk/tasktide-rocksDB" \
         --target "WORKITEM" \
         --step-name "Rscript-Jobs" \
         --worker-pool-size "3" \
