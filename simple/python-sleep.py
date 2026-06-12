@@ -10,6 +10,6 @@ if len( sys.argv ) != 2:
 
 sleepTime = float(sys.argv[1])
 print(f"Sleeping for '{sleepTime}' seconds")
-time.sleep(sleepTime)
+time.sleep(sleepTime * 3600)
 print("Process complete")
 sys.exit(0)
