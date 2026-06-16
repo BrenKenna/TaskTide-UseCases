@@ -21,7 +21,7 @@ rm -f $SOFT/bin/tasktide
 ln -sf $JAVA_MODULES/tasktide-0.9.5/bin/tasktide $SOFT/bin/tasktide
 
 
-mkdir jnosql-libs
+mkdir -p jnosql-libs
 mv lib/jnosql-arangodb-1.1.6.jar jnosql-libs/
 mv lib/jnosql-cassandra-1.1.6.jar jnosql-libs/
 mv lib/jnosql-couchbase-1.1.6.jar jnosql-libs/

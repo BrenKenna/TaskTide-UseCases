@@ -4,6 +4,10 @@
 # Load and setup working directory for TaskTide
 . ~/start.sh
 
+# Stagger batch
+ms=$((1000 + RANDOM % 4001));
+sleep $ms
+
 JOB_ID="${SLURM_JOB_ID:-local}"
 JOB_NAME="${SLURM_JOB_NAME:-tasktide_job}"
 NODE_LIST="${SLURM_NODELIST:-unknown}"
