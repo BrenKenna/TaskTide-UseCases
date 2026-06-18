@@ -208,9 +208,9 @@ $SOFT/bin/job-runner-task-tide.sh \
     --file-path "$wrk/tasktide-sqlite" \
     --target "WORKITEM" \
     --step-name "ShortRunningJobs" \
-    --worker-pool-size "2" \
+    --worker-pool-size "3" \
     --worker-window-size "3" \
-    --item-task-threads "2"
+    --item-task-threads "3"
 
 
 
@@ -330,6 +330,22 @@ WorkItem-553096fd-520a-4b1b-8564-f820ae59bf70|Done|ShortRunningNestedJobs
     "LOCKED": 2
 }
 
+
+"State Summary": {
+    "LOCKED": 0,
+    "DONE": 6,
+    "ERROR": 0,
+    "FOR_UNLOCK": 0,
+    "TODO": 0
+}
+
+"State Summary": {
+    "FOR_UNLOCK": 0,
+    "LOCKED": 0,
+    "TODO": 0,
+    "DONE": 12,
+    "ERROR": 0
+}
 
 '''
 

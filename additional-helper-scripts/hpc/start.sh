@@ -9,6 +9,7 @@
 #####################################
 
 # Installing software
+set -ex
 echo "Importing software modules"
 module load automake 
 module load autoconf

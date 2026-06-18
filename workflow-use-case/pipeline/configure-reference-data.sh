@@ -39,7 +39,10 @@ sbatch --time=08:00:00 --output=/scratch/$USER/gff-DB.log --error=/scratch/$USER
 cd /scratch/bkenna/ref/b38
 gffutils-cli create Homo_sapiens.GRCh38.114.gff3.gz
 '
-sbatch --time=06:00:00 --output=/scratch/$USER/resource-bundle.log --error=/scratch/$USER/resource-bundle.log bash /home/people/bkenna/gatk-resource-bundle.sh
+sbatch \
+    --time=06:00:00 \
+    --output=/scratch/$USER/resource-bundle.log --error=/scratch/$USER/resource-bundle.log \
+    bash /home/people/bkenna/gatk-resource-bundle.sh
 
 
 
@@ -76,7 +79,7 @@ rm tmp
 
 
 # Create tables
-sqlite3 $SAMPLE_META_DATA/sample-meta-data.db <<'EOF'
+sqlite3 $SAMPLE_META_DATA/sample-meta-data.db << EOF
 
 -- Sample Info Table
 
@@ -112,18 +115,20 @@ EOF
 
 
 # Import data
-sqlite3 $SAMPLE_META_DATA/sample-meta-data.db <<'EOF'
+cd $SAMPLE_META_DATA/input
+
+sqlite3 $SAMPLE_META_DATA/sample-meta-data.db << EOF
 .mode tabs
 .import sample-info.txt SampleData
 EOF
 
-sqlite3 $SAMPLE_META_DATA/sample-meta-data.db <<'EOF'
+sqlite3 $SAMPLE_META_DATA/sample-meta-data.db << EOF
 .mode tabs
 .separator "\t"
 .import samples.txt SampleMappings
 EOF
 
-sqlite3 $SAMPLE_META_DATA/sample-meta-data.db <<'EOF'
+sqlite3 $SAMPLE_META_DATA/sample-meta-data.db << EOF
 .mode tabs
 .separator "|"
 .import sampleTracking.txt SampleTracking
@@ -131,7 +136,7 @@ EOF
 
 
 # Apply indexes
-sqlite3 $SAMPLE_META_DATA/sample-meta-data.db <<'EOF'
+sqlite3 $SAMPLE_META_DATA/sample-meta-data.db << EOF
 
 -- SampleData Indexes
 CREATE INDEX sample_data_gender_idx ON SampleData(Gender);

@@ -127,6 +127,19 @@ then
     md5sum $BAM/$SM/$SM.final-gatk.cram* > $BAM/$SM/$SM.final-gatk.cram.md5sum
     samtools flagstat -@ 2 $BAM/$SM/$SM.final-gatk.cram > $BAM/$SM/$SM-flagstats.txt
 
+    # Enqueue next step
+    echo -e "\\n\\nEnqueueing next step 'VariantCalling' for '$SM'"
+    echo -e "$SM_VariantCalling|bash $SOFT/bin/alignment-scripts/VariantCalling.sh|$SM $BAM/$SM/$SM.final-gatk.cram" > $wrk/variant-calling-task.txt
+    tasktide \
+        manager \
+            --repository-type "sqlite" \
+            --file-path "$TASK_TIDE/Bioinformatics/sqlite-repo" \
+            --method "Import" \
+            --target "WORKITEM" \
+            --step-name "VariantCalling" \
+            --input-file "$wrk/variant-calling-task.txt"
+    rm -f $wrk/variant-calling-task.txt
+
 else
     echo "Error: CRAM processing failed, check logs."
     exit 1
