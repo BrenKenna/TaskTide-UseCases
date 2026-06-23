@@ -18,7 +18,12 @@ then
     exit 1
 fi
 
-wrk=$TMPDIR/$SLURM_JOB_ID/$SM-Alignment
+mkdir -p $DATA_DIR/logs/VariantCalling/$SM
+set -e 
+exec > >(tee -a $DATA_DIR/logs/VariantCalling/$SM/$SM-VariantCalling.log) 2>&1
+
+set -x
+wrk=$TMPDIR/$SLURM_JOB_ID/$SM-VariantCalling
 mkdir -p $wrk
 
 # Run haplotype caller
@@ -29,11 +34,12 @@ samtools index $wrk/$SM.bam
 
 time java -Djava.io.tmpdir=$wrk -jar $GATK \
     HaplotypeCaller \
-    --native-pair-hmm-threads 2 \
+    --native-pair-hmm-threads 4 \
     -R $b38_REF --dbsnp $dbSNP \
     -ERC GVCF -L $TGT \
     -I $wrk/$SM.bam \
-    -O $GVCF/$SM/$SM.g.vcf.gz &>> $GVCF/$SM/$SM.vcf.log
+    -O $GVCF/$SM/$SM.g.vcf.gz \
+&>> $GVCF/$SM/$SM.vcf.log
 
 cd $GVCF/$SM/
 md5sum $SM.g.vcf.gz* > $SM.md5sum

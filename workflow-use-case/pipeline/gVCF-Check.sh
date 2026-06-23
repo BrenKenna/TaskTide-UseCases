@@ -36,4 +36,4 @@ variantSummary=$GQ20,$GQ60,$GQ90
 
 # Create table
 echo -e "IID\\tAccession\\tgVCF\\tDisk_Usage\\tWidth\\tLength\\tN_Variants\\tN_dbSNP_Calls\\tGenome_GQ_Summary(GT_20,GT_60,GT_90)\\tVariant_GQ_Summary(GT_20,GT_60,GT_90)" > ${base}_checks.tsv
-echo -e "$iid\\t$acc\\t$base\\t$size\\t$width\\t$length\\t$NVar\\t$variantSummary" >> $base_checks.tsv
+echo -e "$iid\\t$acc\\t$base\\t$size\\t$width\\t$length\\t$NVar\\t$variantSummary" >> ${base}_checks.tsv

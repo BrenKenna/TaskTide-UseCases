@@ -18,7 +18,14 @@ then
     exit 1
 fi
 
+
+mkdir -p $DATA_DIR/logs/DedupBQSR/$SM
+set -e 
+exec > >(tee -a $DATA_DIR/logs/DedupBQSR/$SM/$SM-DedupBQSR.log) 2>&1
+
+
 # Setup working directory
+set -x
 wrk=$TMPDIR/$SLURM_JOB_ID/$SM-DedupBqsr
 mkdir -p $wrk
 cd $wrk
@@ -34,8 +41,8 @@ cd $wrk
 
 
 # Convert to BAM
-time samtools view -h -@ 8 -T $b38_REF $bam -b > $SM.bam
-samtools index -@ 8 $SM.bam
+time samtools view -h -@ 4 -T $b38_REF $bam -b > $SM.bam
+samtools index -@ 4 $SM.bam
 
 # Mark duplicate reads
 echo -e "\\n\\nMarking Duplicate Reads\\n"
@@ -46,8 +53,8 @@ time java -Djava.io.tmpdir=$wrk -jar $GATK \
     COMPRESSION_LEVEL=0 2>> $BAM/$SM/$SM-Dedup.log
 
 # Sort dedup BAM
-samtools sort -@ 8 -o $BAM/$SM/$SM.dedup-sorted.bam $SM.dedup.bam
-samtools index -@ 8 $BAM/$SM/$SM.dedup-sorted.bam
+samtools sort -@ 4 -o $BAM/$SM/$SM.dedup-sorted.bam $SM.dedup.bam
+samtools index -@ 4 $BAM/$SM/$SM.dedup-sorted.bam
 
 # Clean up temp BAMs
 if [ -f $BAM/$SM/$SM.dedup-sorted.bam.bai ]
@@ -111,8 +118,8 @@ fi
 
 # Sort and compress directly to CRAM
 echo -e "\\n\\nSorting & compressing to CRAM\\n"
-time samtools sort -@ 8 -T $wrk -O CRAM -o $BAM/$SM/$SM.final-gatk.cram $BAM/$SM/$SM.bqsr.bam -T $b38_REF
-samtools index -@ 8 $BAM/$SM/$SM.final-gatk.cram
+time samtools sort -@ 4 -T $wrk -O CRAM -o $BAM/$SM/$SM.final-gatk.cram $BAM/$SM/$SM.bqsr.bam -T $b38_REF
+samtools index -@ 4 $BAM/$SM/$SM.final-gatk.cram
 
 # Final cleanup
 if [ -f $BAM/$SM/$SM.final-gatk.cram.crai ]
@@ -125,11 +132,11 @@ then
     # Generate MD5 checksum and flagstats
     echo -e "Generating MD5 sum and alignment summary metrics"
     md5sum $BAM/$SM/$SM.final-gatk.cram* > $BAM/$SM/$SM.final-gatk.cram.md5sum
-    samtools flagstat -@ 2 $BAM/$SM/$SM.final-gatk.cram > $BAM/$SM/$SM-flagstats.txt
+    samtools flagstat -@ 4 $BAM/$SM/$SM.final-gatk.cram > $BAM/$SM/$SM-flagstats.txt
 
     # Enqueue next step
     echo -e "\\n\\nEnqueueing next step 'VariantCalling' for '$SM'"
-    echo -e "$SM_VariantCalling|bash $SOFT/bin/alignment-scripts/VariantCalling.sh|$SM $BAM/$SM/$SM.final-gatk.cram" > $wrk/variant-calling-task.txt
+    echo -e "${SM}_VariantCalling|bash $SOFT/bin/alignment-scripts/VariantCalling.sh|$SM $BAM/$SM/$SM.final-gatk.cram" > $wrk/variant-calling-task.txt
     tasktide \
         manager \
             --repository-type "sqlite" \

@@ -110,23 +110,23 @@ Java ref type org.apache.spark.sql.SparkSession id 1
 ######################################################
 
 
-#####################################
-#####################################
+############################################
+############################################
 ##
 ## a). Setup Tasks
 ##
-#####################################
-#####################################
+############################################
+############################################
 
 
 # Configure params
 export wrk=$DATA_DIR/image-analysis
 step="ImageStacker"
 width="325"
-heigtt="650"
+heigth="650"
 
 cd $wrk
-mkdir -p $wrk/results/parquet
+mkdir -p $wrk/results/parquet/ $wrk/results/images/
 
 
 # Grid a set of tasks
@@ -134,54 +134,59 @@ rm -f $wrk/tasks.txt
 touch $wrk/tasks.txt
 for i in $( seq 300 )
 do
-    redExpr="0"
-    greenExpr="CAST(xVals * $i / $width AS INT)"
-    blueExpr="CAST(yVals * $i / $heigth AS INT)"
-    parquetPath=$wrk/results/parquet/image-$i.img
+    redExpr=$(( RANDOM % 255 ))
+    greenExpr=$(( RANDOM % 255 ))
+    blueExpr=$(( RANDOM % 255 ))
+    parquetPath=$wrk/results/parquet/image-$i
     imagePath=$wrk/results/images/image-$i.png
 
     taskName="ImageAnalysis-$i"
-    taskScript=$(printf \
-        "spark-submit --master local[*] ~/software/bin/image-generator.R \"%s\" \"%s\" \"%s\" \"%s\" \"%s\" " \
+    taskScript="bash $SOFT/bin/ImageAnalysis-Runner.sh"
+    taskArgs=$(printf \
+        "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\" " \
         "$imagePath" "$parquetPath" \
         "$redExpr" "$greenExpr" "$blueExpr"
     )
 
-    echo "$taskName|$taskScript" >> $wrk/tasks.txt
+    echo "$taskName|$taskScript $taskArgs" >> $wrk/tasks.txt
 done
 
 
-#####################################
-#####################################
+
+
+############################################
+############################################
 ##
 ## b). Sanity Check With A Few
 ##
-#####################################
-#####################################
+############################################
+############################################
 
 
 # Fetch first few
-rm -fr "$wrk/tasktide-rocksDB"
-head -n 3 "$wrk/tasks.txt" > $wrk/confirm.txt
+rm -fr "$wrk/tasktide-rocksDB" "$wrk/tasktide-sqlite"
+sort -R "$wrk/tasks.txt" | head -n 4 > $wrk/confirm.txt
 
 tasktide \
-  manager \
-  --repository-type "rocksDB" \
-  --file-path "$wrk/tasktide-rocksDB" \
-  --method "Import" \
-  --delimiter "|" \
-  --target "WORKITEM" \
-  --step-name "$step" \
-  --target-file $wrk/confirm.txt
+    manager \
+    --repository-type "sqlite" \
+    --file-path "$wrk/tasktide-sqlite" \
+    --target "WORKITEM" \
+    --step-name "$step" \
+    --method "Import" \
+    --target-file "$wrk/confirm.txt"
 
 
 # Run engine
 tasktide \
     engine \
-    --repository-type "rocksDB" \
-    --file-path "$wrk/tasktide-rocksDB" \
+    --repository-type "sqlite" \
+    --file-path "$wrk/tasktide-sqlite" \
     --target "WORKITEM" \
-    --step-name "$step"
+    --step-name "$step" \
+    --worker-pool-size "1" \
+    --worker-window-size "2"
+
 
 
 # Export workload
@@ -198,3 +203,79 @@ tasktide \
 
 
 
+
+
+######################################################
+######################################################
+## 
+## 2). Deploy Workload
+## 
+######################################################
+######################################################
+
+
+
+############################################
+############################################
+##
+## a). Task Scheduling
+## 
+############################################
+############################################
+
+
+# Configure paths
+mkdir -p \
+    $TASK_TIDE/ImageAnalysis $JOBDIR/ImageAnalysis
+
+tasktide \
+    manager \
+    --repository-type "sqlite" \
+    --file-path "$TASK_TIDE/ImageAnalysis/sqlite-repo" \
+    --target "WORKITEM" \
+    --step-name "ImageAnalysis" \
+    --method "Import" \
+    --target-file "$wrk/tasks.txt"
+
+
+
+############################################
+############################################
+##
+## b). Job Submission
+## 
+## - 30 Jobs, 10 at a time
+## - Short queue, light resource use
+## 
+############################################
+############################################
+
+
+# Configure pilot job
+rm -fr \
+    $JOBDIR/ImageAnalysis  rm -f $JOBDIR/ImageAnalysis-Pilot.log
+
+mkdir -p $JOBDIR/ImageAnalysis
+
+
+# Submit pilot job
+sbatch \
+    --job-name="ImageAnalysis" \
+    --array=1-30%10 \
+    -t "1:00:00" -n 1 -c 8 \
+    --output=$JOBDIR/ImageAnalysis/ImageAnalysis-Pilot-%A_%a.log \
+    --error=$JOBDIR/ImageAnalysis/ImageAnalysis-Pilot-%A_%a.log \
+        ~/software/bin/job-runner-task-tide.sh \
+            --repository-type "sqlite" \
+            --file-path "$TASK_TIDE/ImageAnalysis/sqlite-repo" \
+            --target "WORKITEM" \
+            --step-name "ImageAnalysis" \
+            --worker-pool-size "2" \
+            --worker-window-size "4"
+
+
+# Monitor job
+JOB_ID="440033"
+squeue -u $USER -j "$JOB_ID"
+
+sacct -j $JOB_ID --format=JobID,JobName,State,Elapsed,AllocCPUS,ReqMem,MaxRSS,AveRSS,MaxVMSize,AveCPU

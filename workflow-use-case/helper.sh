@@ -68,23 +68,13 @@ SELECT * FROM AlignmentQueue LIMIT 10;
 EOF
 
 
-
 # Fetch first two for testing
-echo -e "SELECT WorkItemId, TaskScript FROM AlignmentQueue ORDER BY RANDOM() LIMIT 200;" | sqlite3 $SAMPLE_META_DATA/sample-meta-data.db \
-  > $SAMPLE_META_DATA/alignment-test-tasks.txt
+mkdir -p $DATA_DIR/logs/Alignment
 
-head -n 3 $SAMPLE_META_DATA/alignment-test-tasks.txt
-wc -l alignment-test-tasks.txt
+echo -e "SELECT WorkItemId, TaskScript FROM AlignmentQueue ORDER BY RANDOM() LIMIT 200;" | \
+  sqlite3 $SAMPLE_META_DATA/sample-meta-data.db \
+> $SAMPLE_META_DATA/alignment-test-tasks.txt
 
-
-''' --> Just for reference
-
-HG00106-Alignment|bash /home/people/bkenna/software/bin/alignment-scripts/Alignment.sh HG00106 https://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/other_exome_alignments/HG00106/exome_alignment/HG00106.mapped.solid.mosaik.GBR.exome.20111114.bam
-HG02353-Alignment|bash /home/people/bkenna/software/bin/alignment-scripts/Alignment.sh HG02353 https://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/other_exome_alignments/HG02353/exome_alignment/HG02353.mapped.illumina.mosaik.CDX.exome.20111114.bam
-HG00500-Alignment|bash /home/people/bkenna/software/bin/alignment-scripts/Alignment.sh HG00500 https://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/other_exome_alignments/HG00500/exome_alignment/HG00500.mapped.illumina.mosaik.CHS.exome.20111114.bam
-
-30 alignment-test-tasks.txt
-'''
 
 
 # Import data
@@ -113,26 +103,29 @@ tasktide \
 
 
 
-# Submit jobs
-mkdir -p $$JOBDIR/
-rm -f $$JOBDIR/SequenceAlignment-Pilot.log
+# Submit jobs:  428716
+rm -fr $JOBDIR/SequenceAlignment && \
+  mkdir -p $JOBDIR/SequenceAlignment
+rm -f $JOBDIR/SequenceAlignment-Pilot.log
+
 sbatch \
     --job-name="SequenceAlignment" \
     --array=1-120%30 \
     -t "72:00:00" -n 1 -c 8 \
-    --output=$JOBDIR/SequenceAlignment-Pilot.log --error=$JOBDIR/SequenceAlignment-Pilot.log \
+    --output=$JOBDIR/SequenceAlignment/SequenceAlignment-Pilot-%A_%a.log \
+    --error=$JOBDIR/SequenceAlignment/SequenceAlignment-Pilot-%A_%a.log \
         ~/software/bin/job-runner-task-tide.sh \
             --repository-type "sqlite" \
             --file-path "$TASK_TIDE/Bioinformatics/sqlite-repo" \
             --target "WORKITEM" \
             --step-name "SequenceAlignment" \
-            --worker-pool-size "1" \
-            --worker-window-size "2"
+            --worker-pool-size "2" \
+            --worker-window-size "4"
 
 
 
-# Check in on tasks on job: 426231 16:14 17/06
-JOB_ID="426976"
+# Check in on tasks on job:   439849
+JOB_ID="439849"
 squeue -u $USER -j "$JOB_ID"
 
 sacct -j $JOB_ID --format=JobID,JobName,State,Elapsed,AllocCPUS,ReqMem,MaxRSS,AveRSS,MaxVMSize,AveCPU
@@ -152,7 +145,7 @@ echo "SELECT Id, State FROM Items WHERE State != 'ToDo';" | \
   sqlite3 $TASK_TIDE/Bioinformatics/sqlite-repo/WORKITEM/master
 
 
-echo "SELECT State, COUNT(DISTINCT Id) as 'N Tasks' FROM Items GROUP BY State;" | \
+echo "SELECT State, COUNT(DISTINCT Id) as 'N Tasks' FROM Items WHERE Collection = 'SequenceAlignment' GROUP BY State;" | \
   sqlite3 $TASK_TIDE/Bioinformatics/sqlite-repo/WORKITEM/master
 
 
@@ -179,17 +172,17 @@ done
 
 
 # Checkin on auto-enqueue
-echo -e "SELECT Collection, COUNT(DISTINCT Id) FROM Items GROUP BY Collection;" | \
+echo -e "SELECT Collection, State, COUNT(DISTINCT Id) FROM Items GROUP BY Collection, State;" | \
   sqlite3 $TASK_TIDE/Bioinformatics/sqlite-repo/WORKITEM/master 
 
 grep "org.sqlite.SQLiteException"
 
-'''---> Task update which deletes and inserts go astray when big import occurs. 
-        -> Comes from Mutex directory taken as current directory
+'''
 
-[SQLITE_CORRUPT] The database disk image is malformed (database disk image is malformed)
-[SQLITE_CORRUPT] The database disk image is malformed (database disk image is malformed)
-[SQLITE_CONSTRAINT_UNIQUE] A UNIQUE constraint failed (UNIQUE constraint failed: Items.Id)
+DedupBQSR|ToDo|24
+SequenceAlignment|Done|24
+SequenceAlignment|Locked|47
+SequenceAlignment|ToDo|129
 
 '''
 
