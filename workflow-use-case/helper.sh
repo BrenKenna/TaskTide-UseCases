@@ -184,6 +184,13 @@ SequenceAlignment|Done|24
 SequenceAlignment|Locked|47
 SequenceAlignment|ToDo|129
 
+
+
+DedupBQSR|ToDo|193
+SequenceAlignment|Done|193
+SequenceAlignment|Error|2
+SequenceAlignment|Locked|5
+
 '''
 
 
