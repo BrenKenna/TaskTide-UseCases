@@ -1,0 +1,52 @@
+# Internal subnet
+networks:
+  gluster_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
+          gateway: 192.168.1.1
+    external: false
+  gluster_nlb:
+    external: true
+
+services:
+  gluster-nlb:
+    image: haproxy:alpine
+    container_name: gluster-nlb
+    restart: unless-stopped
+    ports:
+      - "2049:2049"
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      - gluster_net:
+        ipv4_address: 192.168.1.2
+      - gluster_nlb
+
+  gluster-node1:
+    image: gluster/gluster-centos:latest
+    container_name: gluster-node1
+    volumes:
+      - /mnt/brick1:/data/glusterfs/brick1
+    networks:
+      gluster_net:
+        ipv4_address: 192.168.1.3
+
+  gluster-node2:
+    image: gluster/gluster-centos:latest
+    container_name: gluster-node2
+    volumes:
+      - /mnt/brick2:/data/glusterfs/brick2
+    networks:
+      gluster_net:
+        ipv4_address: 192.168.1.4
+
+  gluster-node3:
+    image: gluster/gluster-centos:latest
+    container_name: gluster-node3
+    volumes:
+      - /mnt/brick3:/data/glusterfs/brick3
+    networks:
+      gluster_net:
+        ipv4_address: 192.168.1.5
