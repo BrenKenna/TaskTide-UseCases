@@ -1,0 +1,3 @@
+2026-06-26 12:07:12,554 [INFO] Starting training on World 1 Level 1 for 6000 timesteps.
+2026-06-26 12:07:12,555 [INFO] Creating environment: SuperMarioBros-1-1-v0
+2026-06-26 12:09:07,300 [INFO] Training complete. Model saved to mario_1_1_ppo.zip
