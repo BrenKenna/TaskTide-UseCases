@@ -12,7 +12,7 @@ RUN groupadd --system tasktide && \
 
 # Unpack task into working directory
 COPY tasktide.zip /tmp/tasktide.zip
-RUN unzip /tmp/tasktide.zip -d /opt &&
+RUN unzip /tmp/tasktide.zip -d /opt && \
     mv /opt/tasktide-0.9.5 /opt/tasktide && \
     chmod +x /opt/tasktide/bin/tasktide && \
     chown -R tasktide:tasktide /opt/tasktide
