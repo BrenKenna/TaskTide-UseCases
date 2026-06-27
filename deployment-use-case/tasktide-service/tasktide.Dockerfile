@@ -11,18 +11,15 @@ RUN groupadd --system tasktide && \
 
 
 # Unpack task into working directory
-COPY tasktide/build/distributions/tasktide-0.9.0.zip /tmp/tasktide.zip
-RUN unzip /tmp/tasktide.zip -d /opt && \
-    mv /opt/tasktide-0.9.0 /opt/tasktide && \
+COPY tasktide.zip /tmp/tasktide.zip
+RUN unzip /tmp/tasktide.zip -d /opt &&
+    mv /opt/tasktide-0.9.5 /opt/tasktide && \
     chmod +x /opt/tasktide/bin/tasktide && \
-    chown -R tasktide:tasktide /opt/tasktide && \
-    rm -f /tmp/tasktide.zip
+    chown -R tasktide:tasktide /opt/tasktide
 
 
 # Mark config folder as volume for swapping configs
-VOLUME [
-    "/opt/tasktide/config"
-]
+VOLUME [ "/opt/tasktide/config" ]
 
 
 # Switch to non root user to run task tide
