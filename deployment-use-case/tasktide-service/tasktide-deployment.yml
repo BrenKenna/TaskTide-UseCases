@@ -18,18 +18,14 @@
 # Component networks
 networks:
   dbNet:
-    external: false
 
   tasktide_web:
-    external: false
 
   tasktide_engine:
-    external: false
 
   nginx_alb:
-    external: false
 
-secretes:
+secrets:
   couchDbPass:
     file: ./couchDB-pass.txt
 
@@ -45,34 +41,35 @@ services:
 
 # CouchDB
   couchDB:
+    container_name: "couchdb"
+    image: "couchdb:2.3.1"
+    
     networks:
       - dbNet
 
-    ports:
-      - "5984:5984"
-
-    environment:
-      - COUCHDB_USER=admin
-      - COUCHDB_PASSWORD_FILE=/run/secretes/couchDB-pass.txt
-
-    secretes:
-      - couchDbPass
+    #ports:
+    #  - "5984:5984"
 
     volumes:
       - ./couchdb_data:/opt/couchdb/data
 
-
-# Creates database
-  initCouchDB:
-    image: curlimages/curl:8.7.1
-    depends_on:
-      - couchdb
-    volumes:
-      - ./init-couchDB.sh:/opt/configDb.sh:ro
-      - ./indexes.json:/opt/indexes:ro
-    entrypoint: [ "/bin/sh", "/opt/configDb.sh" ]
     secrets:
       - couchDbPass
+
+
+# Creates database admin:password
+  initCouchDB:
+    image: ubuntu:24.04
+    networks:
+      - dbNet
+    volumes:
+      - ./configDB.sh:/opt/configDB.sh:ro
+      - ./indexes.json:/opt/indexes.json:ro
+    entrypoint: [ "/bin/bash", "/opt/configDB.sh" ]
+    secrets:
+      - couchDbPass
+    depends_on:
+      - couchDB
 
 
 #############################################
@@ -86,12 +83,14 @@ services:
 
 # Spins-up 3 web apps
   tasktide_webapi:
+    # container_name: "tasktide-webapi"
     image: tasktide:latest
     networks:
-      - tasktide
+      - tasktide_web
       - dbNet
 
-    user: "1000:1000"
+    # ports:
+    #  - "80:80"
 
     volumes:
       - ./microprofile-config.properties:/opt/tasktide/config/META-INF/microprofile-config.properties
@@ -103,14 +102,12 @@ services:
         - --host
         - "tasktide_webapi"
         - --port
-        - 80
+        - "80"
         - --base-path
         - "/tasktide"
 
     deploy:
       replicas: 3
-      restart_policy:
-        condition: on-feature
 
     depends_on:
       - initCouchDB
@@ -125,6 +122,7 @@ services:
 #############################################
 #############################################
 
+
   nginx_alb:
     image: nginx:1.27-alpine
     container_name: tasktide_app
@@ -134,5 +132,6 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
       - tasktide_web
+
     depends_on:
       - tasktide_webapi

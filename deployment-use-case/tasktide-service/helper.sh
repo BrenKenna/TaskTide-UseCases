@@ -112,3 +112,181 @@ WARNING: The following warnings have been detected: WARNING: A HTTP GET method, 
 '
 
 '''
+
+
+##################################################
+##################################################
+## 
+## 3). Deploy Service
+## 
+##################################################
+##################################################
+
+
+# Run service
+docker compose --file tasktide-deployment.yml up -d
+
+'''
+
+[+] up 9/9
+ ✔ Network tasktide-service_tasktide_web        Created                                                                                                                                                0.2s
+ ✔ Network tasktide-service_nginx_alb           Created                                                                                                                                                0.1s
+ ✔ Network tasktide-service_dbNet               Created                                                                                                                                                0.1s
+ ✔ Container couchdb                            Created                                                                                                                                                0.2s
+ ✔ Container tasktide-service-initCouchDB-1     Created                                                                                                                                                0.2s
+ ✔ Container tasktide-service-tasktide_webapi-3 Created                                                                                                                                                0.2s
+ ✔ Container tasktide-service-tasktide_webapi-1 Created                                                                                                                                                0.2s
+ ✔ Container tasktide-service-tasktide_webapi-2 Created                                                                                                                                                0.2s
+ ✔ Container tasktide_app                       Created                                                                                                                                                0.2s
+
+
+'''
+
+
+# Register a task
+curl -v -H "Content-Type: application/json" \
+  -X POST http://localhost/services/workitem/create \
+  -d '{
+    "Task Name": "Seq10",
+    "Task Script": "seq 10",
+    "Step Name": "SeqTasks"
+  }' \
+| jq
+
+
+'''
+
+{
+  "DoneDate": 0,
+  "Id": "WorkItem-17ff1e88-54d7-47d7-a8a3-e4ede814b84e",
+  "ItemName": "Seq10",
+  "ItemState": "TODO",
+  "ItemType": "SINGLE",
+  "Job Environment Id": "",
+  "LockDate": 0,
+  "StepId": "Step-03083c32-2ed1-4a6e-89d5-4ab311ca3db5",
+  "StepName": "SeqTasks",
+  "TaskCount": 1,
+  "TaskDone": 0,
+  "Workload": {
+    "TaskMap": {
+      "Seq10": {
+        "Job Environment Id": "",
+        "Task": "seq 10",
+        "Task Log": {
+          "CPU Duration": 0,
+          "End Time": 0,
+          "Exit Code": -1,
+          "Process Id": 0,
+          "Process Log": {
+            "Stderr": [
+              ""
+            ],
+            "Stdout": [
+              ""
+            ],
+            "id": "ProcessLog-100e2acb-648a-4b11-a7c6-daced555b49b"
+          },
+          "Start Time": 0,
+          "Thread Name": "NA",
+          "id": "TaskLog-063378de-81bd-46a2-aa06-bdaf6cc4d11e"
+        },
+        "Task Name": "Seq10",
+        "Task State": "PENDING",
+        "Work Item Id": "WorkItem-17ff1e88-54d7-47d7-a8a3-e4ede814b84e",
+        "annotations": {
+          "Annotation Id": "CustomAnnotation-25fb5b42-845f-496b-b968-93f364fe5466",
+          "Annotation Map": {}
+        },
+        "id": "ItemTask-726fccf4-0844-4a2e-a0f1-8f6f9b83746a"
+      }
+    },
+    "WorkloadType": "SINGLE",
+    "earliestDone": -1,
+    "id": "Workload-ac16eb70-23b3-4d23-8253-2e693780acec",
+    "latestDone": 0,
+    "workloadSize": 1
+  },
+  "annotations": {
+    "Annotation Id": "CustomAnnotation-039dd1d7-4dc2-4fc9-82e1-ce1dd5b6144c",
+    "Annotation Map": {}
+  },
+  "collection": "SeqTasks",
+  "workloadSize": 1
+}
+
+'''
+
+
+
+# Clear services, and re-deploy
+docker compose --file tasktide-deployment.yml down --remove-orphans
+docker compose --file tasktide-deployment.yml up -d
+
+curl -v \
+  -H "Content-Type: application/json" \
+  -X GET 'http://localhost/services/workitem/get?id=WorkItem-17ff1e88-54d7-47d7-a8a3-e4ede814b84e' \
+| jq
+
+'''
+
+{
+  "DoneDate": 0,
+  "Id": "WorkItem-17ff1e88-54d7-47d7-a8a3-e4ede814b84e",
+  "ItemName": "Seq10",
+  "ItemState": "TODO",
+  "ItemType": "SINGLE",
+  "Job Environment Id": "",
+  "LockDate": 0,
+  "StepId": "Step-03083c32-2ed1-4a6e-89d5-4ab311ca3db5",
+  "StepName": "SeqTasks",
+  "TaskCount": 1,
+  "TaskDone": 0,
+  "Workload": {
+    "TaskMap": {
+      "Seq10": {
+        "Job Environment Id": "",
+        "Task": "seq 10",
+        "Task Log": {
+          "CPU Duration": 0,
+          "End Time": 0,
+          "Exit Code": -1,
+          "Process Id": 0,
+          "Process Log": {
+            "Stderr": [
+              ""
+            ],
+            "Stdout": [
+              ""
+            ],
+            "id": "ProcessLog-100e2acb-648a-4b11-a7c6-daced555b49b"
+          },
+          "Start Time": 0,
+          "Thread Name": "NA",
+          "id": "TaskLog-063378de-81bd-46a2-aa06-bdaf6cc4d11e"
+        },
+        "Task Name": "Seq10",
+        "Task State": "PENDING",
+        "Work Item Id": "WorkItem-17ff1e88-54d7-47d7-a8a3-e4ede814b84e",
+        "annotations": {
+          "Annotation Id": "CustomAnnotation-25fb5b42-845f-496b-b968-93f364fe5466",
+          "Annotation Map": {}
+        },
+        "id": "ItemTask-726fccf4-0844-4a2e-a0f1-8f6f9b83746a"
+      }
+    },
+    "WorkloadType": "SINGLE",
+    "earliestDone": -1,
+    "id": "Workload-ac16eb70-23b3-4d23-8253-2e693780acec",
+    "latestDone": 0,
+    "workloadSize": 1
+  },
+  "annotations": {
+    "Annotation Id": "CustomAnnotation-039dd1d7-4dc2-4fc9-82e1-ce1dd5b6144c",
+    "Annotation Map": {}
+  },
+  "collection": "SeqTasks",
+  "workloadSize": 1
+}
+
+'''
