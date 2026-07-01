@@ -6,29 +6,13 @@ FROM eclipse-temurin:17-jre
 RUN groupadd --system tasktide && \
     useradd --system --create-home --home-dir /home/tasktide --gid tasktide tasktide && \
     apt-get update && \
+    apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
         unzip \
-        ca-certificates \
-        curl \
-        squashfs-tools \
-        cryptsetup \
-        fuse3 \
-        uidmap \
-        tzdata \
-        libseccomp2 \
+        apptainer && \
+    mkdir -p /home/tasktide/.apptainer && \
+    chown -R tasktide:tasktide /home/tasktide && \
     rm -rf /var/lib/apt/lists/*
-
-
-# Install Apptainer binary
-RUN curl -L -o /tmp/apptainer.deb \
-    https://github.com/apptainer/apptainer/releases/download/v${APPTAINER_VERSION}/apptainer_${APPTAINER_VERSION}_amd64.deb \
-    && apt-get update \
-    && apt-get install -y /tmp/apptainer.deb \
-    && rm -f /tmp/apptainer.deb \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN mkdir -p /home/tasktide/.apptainer && \
-    chown -R tasktide:tasktide /home/tasktide
 
 
 # Unpack task into working directory

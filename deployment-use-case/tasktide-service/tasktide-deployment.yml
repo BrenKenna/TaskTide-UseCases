@@ -39,6 +39,7 @@ services:
 #############################################
 #############################################
 
+
 # CouchDB
   couchDB:
     container_name: "couchdb"
@@ -47,8 +48,8 @@ services:
     networks:
       - dbNet
 
-    #ports:
-    #  - "5984:5984"
+    ports:
+      - "5984:5984"
 
     volumes:
       - ./couchdb_data:/opt/couchdb/data
