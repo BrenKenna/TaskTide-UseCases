@@ -29,12 +29,41 @@ secrets:
   couchDbPass:
     file: ./couchDB-pass.txt
 
-services:
+
 
 #############################################
 #############################################
 ## 
-## 2). CouchDB Service
+## 2). Application Proxy
+## 
+#############################################
+#############################################
+services:
+
+
+# nginx
+  nginx_alb:
+    image: nginx:1.27-alpine
+    container_name: tasktide_app
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - tasktide_web
+
+    depends_on:
+      - tasktide_webapi
+
+    deploy:
+      replicas: 1
+
+
+
+#############################################
+#############################################
+## 
+## 3). CouchDB Service
 ## 
 #############################################
 #############################################
@@ -48,6 +77,10 @@ services:
     networks:
       - dbNet
 
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=password
+
     ports:
       - "5984:5984"
 
@@ -56,6 +89,9 @@ services:
 
     secrets:
       - couchDbPass
+    
+    deploy:
+      replicas: 1
 
 
 # Creates database admin:password
@@ -73,10 +109,11 @@ services:
       - couchDB
 
 
+
 #############################################
 #############################################
 ## 
-## 2). TaskTide Web API
+## 4). TaskTide Web API
 ## 
 #############################################
 #############################################
@@ -84,14 +121,10 @@ services:
 
 # Spins-up 3 web apps
   tasktide_webapi:
-    # container_name: "tasktide-webapi"
     image: tasktide:latest
     networks:
       - tasktide_web
       - dbNet
-
-    # ports:
-    #  - "80:80"
 
     volumes:
       - ./microprofile-config.properties:/opt/tasktide/config/META-INF/microprofile-config.properties
@@ -114,25 +147,40 @@ services:
       - initCouchDB
 
 
-
 #############################################
 #############################################
 ## 
-## 3). Application Load Balancer
+## 5). TaskTide Engine
 ## 
 #############################################
 #############################################
 
 
-  nginx_alb:
-    image: nginx:1.27-alpine
-    container_name: tasktide_app
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+# Spins-up 3 web apps
+  tasktide_engine:
+    image: bkenna/tasktide:apptainer
     networks:
-      - tasktide_web
+      - nginx_alb
+      - dbNet
+
+    volumes:
+      - ./microprofile-config.properties:/opt/tasktide/config/META-INF/microprofile-config.properties
+      - ./tasktide_data:/data
+
+    working_dir: /opt/tasktide
+
+    command:
+        - engine
+        - --repository-type "nosql"
+        - --target "WORKITEM"
+        - --step-name "TrainMarioBros,PlayMarioBros"
+        - --execution-policy "service"
+        - --worker-pool-size 2
+        - --worker-window-size 4
+        - --item-task-threads 2
+
+    deploy:
+      replicas: 3
 
     depends_on:
-      - tasktide_webapi
+      - nginx_alb

@@ -468,6 +468,13 @@ docker push bkenna/tasktide:apptainer
 
 
 
+# Package to docker hub
+docker build -t mario-agent -f mario-agent.Dockerfile .
+docker tag mario-agent:latest bkenna/mario-agent:latest
+docker push bkenna/mario-agent:latest
+
+
+
 ##############################################
 ##############################################
 ## 
@@ -538,6 +545,12 @@ for ( $iter = 0; $iter -lt $replicas; $iter++ ) {
 ## 
 ##################################################################################
 ##################################################################################
+
+
+# Build container
+docker build -t mario-agent -f mario-agent.Dockerfile .
+docker tag mario-agent:latest bkenna/mario-agent:latest
+docker push bkenna/mario-agent:latest 
 
 
 # Build with apptainer

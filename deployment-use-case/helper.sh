@@ -173,7 +173,49 @@ Wrapping the env in a VecTransposeImage.
 ##################################################
 ##################################################
 ## 
-## 3). Deploy
+## 3). Verify Containerized Application
 ## 
 ##################################################
 ##################################################
+
+
+# 
+docker compose --file tasktide-deployment.yml up -d
+
+
+
+# Enqueue workload
+stepName="TrainMarioBros"
+for world in {1..8}; do
+    for level in {1..4}; do
+        taskScript="apptainer run docker://bkenna/mario-agent train --world $world --level $level --timesteps 6000"
+        taskLabel="Mario-World${world}-Level${level}"
+
+        curl -s \
+            -H "Content-Type: application/json" \
+            -X POST http://localhost/services/workitem/create \
+            -d "$(jq -n \
+                --arg name "$taskLabel" \
+                --arg script "$taskScript" \
+                --arg step "$stepName" \
+                '{
+                    "Task Name": $name,
+                    "Task Script": $script,
+                    "Step Name": $step
+                }')" \
+        | jq '.Id'
+    done
+done
+
+
+
+'''
+
+"WorkItem-8a934296-6700-4f62-be07-3309466caa4a"
+"WorkItem-a7651b4d-4cbb-4569-ac9c-bc337ea57000"
+...
+...
+"WorkItem-4a796a40-1f5c-4668-a8b9-8b3a29746205"
+"WorkItem-4291f50e-a9ba-44ff-9f0f-d060fbfd0126"
+
+'''
