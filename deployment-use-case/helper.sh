@@ -184,13 +184,159 @@ docker compose --file tasktide-deployment.yml up -d
 
 
 
+# Check running apptainer directly: fakeroot does not work
+stepName="BusyBoxMessage"
+for i in {1..3}
+do
+    taskLabel="BusyBoxMessage-$i"
+    taskScript="apptainer run docker://busybox echo \"Hello from BusyBox-$i\""
+    curl -s \
+            -H "Content-Type: application/json" \
+            -X POST http://localhost/services/workitem/create \
+            -d "$(jq -n \
+                --arg name "$taskLabel" \
+                --arg script "$taskScript" \
+                --arg step "$stepName" \
+                '{
+                    "Task Name": $name,
+                    "Task Script": $script,
+                    "Step Name": $step
+                }')" \
+        | jq '.Id'
+done
+
+
+curl http://localhost/services/workitem/get?id=WorkItem-29b2c40b-196f-42f3-a100-bb9a5484a765
+
+''' ---> Running without "privileged: true" causes apptainer to fail with 255 and no visible error message.
+
+{
+  "DoneDate": 1783951467114,
+  "Id": "WorkItem-0a4e50c2-1082-471d-8537-183c7a8aa978",
+  "ItemName": "BusyBoxMessage-2",
+  "ItemState": "DONE",
+  "ItemType": "SINGLE",
+  "Job Environment Id": "JobEnvironment-ffe75a89-952d-4f89-8416-649e402ca709",
+  "LockDate": 1783951462733,
+  "LockId": "MTc4Mzk1MTQ2MjczMTlkODQ3YzE4LWVjZTUtNDE1Ny05YzIwLWQ5MmU0ODg3OGEzNQ==",
+  "StepId": "Step-6247e9fa-df6d-4d7a-adab-74e1bf442d43",
+  "StepName": "BusyBoxMessage",
+  "TaskCount": 1,
+  "TaskDone": 1,
+  "Workload": {
+    "TaskMap": {
+      "BusyBoxMessage-2": {
+        "Job Environment Id": "JobEnvironment-ffe75a89-952d-4f89-8416-649e402ca709",
+        "Task": "apptainer run docker://busybox echo \"Hello from BusyBox-2\"",
+        "Task Log": {
+          "CPU Duration": 0,
+          "End Time": 1783951467114,
+          "Exit Code": 0,
+          "Process Id": 121,
+          "Process Log": {
+            "Stderr": [
+              "Hello from BusyBox-2"
+            ],
+            "Stdout": [
+              "Hello from BusyBox-2"
+            ],
+            "id": "ProcessLog-7e4d701a-5152-4fa4-ab58-177120757193"
+          },
+          "Start Time": 1783951463903,
+          "Thread Name": "pool-3-thread-1",
+          "id": "TaskLogging-2a70f824-cb75-4617-93b2-f00435ce4ee2"
+        },
+        "Task Name": "BusyBoxMessage-2",
+        "Task State": "COMPLETE",
+        "Work Item Id": "WorkItem-0a4e50c2-1082-471d-8537-183c7a8aa978",
+        "annotations": {
+          "Annotation Id": "CustomAnnotation-9173e915-efab-4882-9ea7-fd50c72e8be5",
+          "Annotation Map": {}
+        },
+        "id": "ItemTask-2416d2d3-550a-455f-be28-e39d2d1b25e9"
+      }
+    },
+    "WorkloadType": "SINGLE",
+    "earliestDone": 1783951467114,
+    "id": "Workload-d38dd0c3-4f20-4c0a-a7c7-fac7690766c1",
+    "latestDone": 1783951467114,
+    "workloadSize": 1
+  },
+  "annotations": {
+    "Annotation Id": "CustomAnnotation-0f99a16c-7b9d-41c3-a569-753460dcc00b",
+    "Annotation Map": {}
+  },
+  "collection": "BusyBoxMessage",
+  "workloadSize": 1
+}
+
+
+{
+  "DoneDate": 0,
+  "Id": "WorkItem-351d3b6c-ab83-473f-a21a-32a318ec4ff1",
+  "ItemName": "BusyBoxMessage-3",
+  "ItemState": "ERROR",
+  "ItemType": "SINGLE",
+  "Job Environment Id": "JobEnvironment-ffe75a89-952d-4f89-8416-649e402ca709",
+  "LockDate": 1783951957305,
+  "LockId": "MTc4Mzk1MTk1NzMwNTZjYTY4NjdiLWNmNmYtNDhiMS1iODhkLWRlNjc0NjI3NWFhMQ==",
+  "StepId": "Step-6247e9fa-df6d-4d7a-adab-74e1bf442d43",
+  "StepName": "BusyBoxMessage",
+  "TaskCount": 1,
+  "TaskDone": 0,
+  "Workload": {
+    "TaskMap": {
+      "BusyBoxMessage-3": {
+        "Job Environment Id": "JobEnvironment-ffe75a89-952d-4f89-8416-649e402ca709",
+        "Task": "apptainer run docker://busybox echo \"Hello from BusyBox-3\"",
+        "Task Log": {
+          "CPU Duration": 0,
+          "End Time": 1783951961422,
+          "Exit Code": 255,
+          "Process Id": 220,
+          "Process Log": {
+            "Stderr": [],
+            "Stdout": [],
+            "id": "ProcessLog-b3414548-f77b-41e3-8f04-6670a9511734"
+          },
+          "Start Time": 1783951960518,
+          "Thread Name": "pool-3-thread-2",
+          "id": "TaskLogging-e58d570e-c5be-40be-88ff-999869c5b8a1"
+        },
+        "Task Name": "BusyBoxMessage-3",
+        "Task State": "ERROR",
+        "Work Item Id": "WorkItem-351d3b6c-ab83-473f-a21a-32a318ec4ff1",
+        "annotations": {
+          "Annotation Id": "CustomAnnotation-275ed2b4-4274-4bea-863e-ac847faea54e",
+          "Annotation Map": {}
+        },
+        "id": "ItemTask-e89b8348-7cc7-4f8a-8cc9-cbadbf346d9a"
+      }
+    },
+    "WorkloadType": "SINGLE",
+    "earliestDone": -1,
+    "id": "Workload-6a3099bd-d628-473d-b7fd-824a812059e1",
+    "latestDone": 0,
+    "workloadSize": 1
+  },
+  "annotations": {
+    "Annotation Id": "CustomAnnotation-eca18777-bf56-4eeb-b6f5-8dfe616db1de",
+    "Annotation Map": {}
+  },
+  "collection": "BusyBoxMessage",
+  "workloadSize": 1
+}
+
+'''
+
+
 # Enqueue workload
 stepName="TrainMarioBros"
-for world in {1..8}; do
-    for level in {1..4}; do
-        taskScript="apptainer run docker://bkenna/mario-agent train --world $world --level $level --timesteps 6000"
+for world in {1..2}; do
+    for level in {1..2}; do
+        containerCMD="apptainer run --bind /data/mario:/data --env PYTHONPATH=/opt/mario-agent:\$PYTHONPATH /opt/mario-agent/mario-agent.sif"
+        taskScript="$containerCMD train --world $world --level $level --timesteps 6000"
         taskLabel="Mario-World${world}-Level${level}"
-
         curl -s \
             -H "Content-Type: application/json" \
             -X POST http://localhost/services/workitem/create \
@@ -211,11 +357,39 @@ done
 
 '''
 
-"WorkItem-8a934296-6700-4f62-be07-3309466caa4a"
-"WorkItem-a7651b4d-4cbb-4569-ac9c-bc337ea57000"
-...
-...
-"WorkItem-4a796a40-1f5c-4668-a8b9-8b3a29746205"
-"WorkItem-4291f50e-a9ba-44ff-9f0f-d060fbfd0126"
+"WorkItem-2e4aed6e-729f-4a3d-a9d3-d4a2416b081a"
+"WorkItem-3ce68f59-a598-4275-9060-ec7104d96eb2"
+"WorkItem-568207ee-0aad-4132-8df9-fe5e9d5d3c2a"
+"WorkItem-5e45f41e-6ccb-415c-afe8-f743df942b95"
+
+'''
+
+
+
+# 
+docker container logs tasktide-service-mario_trainer-1
+
+
+'''
+
+2026-07-08 14:31:53 INFO  [ pool-3-thread-1 -> org.tasktide.engine.executor.ItemTaskExecutor.executeTask ]: Executing task on thread 'pool-3-thread-1':
+'apptainer run docker://bkenna/mario-agent train --world 1 --level 2 --timesteps 6000'
+2026-07-08 14:31:53 INFO  [ pool-3-thread-1 -> org.tasktide.engine.observer.ObserverChain.onTaskProcessing ]: Evaluating Observer 'ItemTaskTimeKeeper' for task 'ItemTask-b1648c6e-6bcf-456f-90ea-8ff36c48307c' with onTaskProcessing result 'true'
+2026-07-08 14:31:53 INFO  [ pool-3-thread-1 -> org.tasktide.engine.observer.ObserverChain.onTaskProcessing ]: Evaluating Observer 'ItemTaskStateObserver' for task 'ItemTask-b1648c6e-6bcf-456f-90ea-8ff36c48307c' with onTaskProcessing result 'true'
+2026-07-08 14:31:53 DEBUG [ pool-3-thread-1 -> org.tasktide.engine.executor.ProcessExecutor.execute ]: Beginning execution of task:     apptainer run docker://bkenna/mario-agent train --world 1 --level 2 --timesteps 6000
+2026-07-08 14:31:59 INFO  [ main -> org.tasktide.engine.worker.TaskTideEngineWorker.processSampling ]: Starting engine 'Worker-1'
+2026-07-08 14:31:59 INFO  [ main -> org.tasktide.engine.worker.TaskTideEngineWorker.processSampling ]: Engine 'Worker-1' started, caching for reference
+2026-07-08 14:31:59 INFO  [ pool-2-thread-2 -> org.tasktide.engine.worker.TaskTideEngineWorker.sampleAndTraverse ]: Configuring WorkItem-Traverser for processing
+2026-07-08 14:31:59 INFO  [ pool-2-thread-2 -> org.tasktide.engine.worker.TaskTideEngineWorker.sampleAndTraverse ]: Fetching workload
+2026-07-08 14:31:59 INFO  [ pool-2-thread-2 -> org.tasktide.engine.worker.TaskTideEngineWorker.sampleWorkload ]: Processing retrieved workload of size '0'
+2026-07-08 14:32:09 INFO  [ main -> org.tasktide.engine.worker.TaskTideEngineWorker.processSampling ]: Waiting on '2' to process window sizes of '4'
+2026-07-08 14:32:09 INFO  [ main -> org.tasktide.engine.worker.TaskTideEngineWorker.processSampling ]: Waiting on task: 'Task-0'
+
+
+
+INFO:    Converting OCI blobs to SIF format
+INFO:    Starting build...
+INFO:    Fetching OCI image...
+
 
 '''

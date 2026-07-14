@@ -2,15 +2,16 @@
 
 
 # Parse arguments
-set -e
-case "$CMD" in
+export PYTHONPATH=/opt/mario-agent:$PYTHONPATH
+
+set -ex
+MODE=$1
+shift
+
+case "$MODE" in
   train)
     while [[ $# -gt 0 ]]; do
       case "$1" in
-        --mode)
-          MODE="$2"
-          shift 2
-          ;;
         --world)
           WORLD="$2"
           shift 2
@@ -56,24 +57,28 @@ then
     mkdir -p $WRK && cd $WRK
 
     # Train agent
-    mario-agent --mode train "$@"
+    mario-agent \
+        --mode train \
+        --world $WORLD \
+        --level $LEVEL \
+        --timesteps $TIMESTEPS
 
     # Enqueue play task
     stepName="PlayMarioBros"
-    name="PlayMario_Bros-${WORLD}_Level-$LEVEL"
+    taskLabel="PlayMario_Bros-${WORLD}_Level-$LEVEL"
     taskScript="apptainer docker://bkenna/mario-agent play --video --model-path $WRK/mario_$WORLD_$LEVEL_ppo.zip"
 
     curl -v -H "Content-Type: application/json" \
        -X POST http://tasktide_app/services/workitem/create \
         -d "$(jq -n \
-            --arg name "$name" \
-            --arg taskScript "$taskScript" \
-            --arg stepName "$stepName" \
-                '{
+            --arg name "$taskLabel" \
+            --arg task "$taskScript" \
+            --arg step "$stepName" \
+              '{
                     "Task Name": "$name",
-                    "Task Script": "$taskScript",
-                    "Step Name": "$stepName"
-            }')"
+                    "Task Script": "$task",
+                    "Step Name": "$step"
+              }')"
 
 
 # Otherwise play 

@@ -7,6 +7,8 @@ RUN apt-get update && apt-get install -y \
     libgl1 libegl1 libgles2 \
     libglu1-mesa mesa-utils libgl1-mesa-dri \
     ffmpeg \
+    curl \
+    jq \
     build-essential \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*

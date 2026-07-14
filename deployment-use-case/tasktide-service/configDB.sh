@@ -10,7 +10,7 @@ apt-get install -y curl jq > /dev/null
 
 # Wait to couchdb to be provisioned
 echo "Waiting for couchdb..."
-until curl -fs http://couchdb:5984/ > /dev/null
+until curl -u "admin:password" -fs http://couchdb:5984/ > /dev/null
 do
     sleep 1
 done
@@ -18,7 +18,7 @@ done
 
 # Create database
 echo "Creating database..."
-curl -X PUT http://couchdb:5984/tasktide_database
+curl -u "admin:password" -X PUT http://couchdb:5984/tasktide_database  | jq '.'
 
 
 # Create indexes
@@ -28,7 +28,7 @@ jq -r 'keys[]' /opt/indexes.json | while read name
 do
     echo "Indexing:\\t$name"
     fields=$(jq -c --arg n "$name" '.[$n]' /opt/indexes.json | jq .fields)
-    curl -v -H "Content-Type: application/json" \
+    curl -u "admin:password" -v -H "Content-Type: application/json" \
         -X POST http://couchdb:5984/tasktide_database/_index \
         -d "$(jq -n \
             --arg name "$name" \
@@ -37,7 +37,7 @@ do
                 index: { fields: $fields },
                 name: $name,
                 type: "json"
-            }')"
+            }')" | jq '.'
     sleep 1
 done
 echo "Done."

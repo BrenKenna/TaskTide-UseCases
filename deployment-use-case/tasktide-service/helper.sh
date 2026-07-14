@@ -547,10 +547,12 @@ for ( $iter = 0; $iter -lt $replicas; $iter++ ) {
 ##################################################################################
 
 
+
 # Build container
 docker build -t mario-agent -f mario-agent.Dockerfile .
 docker tag mario-agent:latest bkenna/mario-agent:latest
 docker push bkenna/mario-agent:latest 
+
 
 
 # Build with apptainer
@@ -567,6 +569,18 @@ docker push bkenna/tasktide:apptainer
 
 
 
+# Build apptainer sif
+cd use-cases/deployment-use-case/sif
+apptainer build mario-agent.sif docker-daemon://mario-agent:latest
+apptainer build tasktide-apptainer.sif docker-daemon://tasktide:apptainer
+
+mkdir -p mario-data
+apptainer run \
+  --env 'PYTHONPATH=/opt/mario-agent:$PYTHONPATH' \
+  --bind ./mario-data:/data \
+  ./mario-agent.sif train --world 1 --level 1 --timesteps 6000
+
+
 # Engine overwritting with 
 $iter="1"
 docker rm -f tasktide_engine-$iter
@@ -577,6 +591,7 @@ docker container run --rm `
   --network tasktide-service_dbNet `
   -v "./microprofile-config.properties:/opt/tasktide/config/META-INF/microprofile-config.properties" `
   tasktide:latest engine --step-name "Mario-Training" --worker-pool-size "2" --item-task-threads "2" --worker-window-size "2"
+
 
 
 # Clear with logs
