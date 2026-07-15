@@ -75,9 +75,9 @@ then
             --arg task "$taskScript" \
             --arg step "$stepName" \
               '{
-                    "Task Name": "$name",
-                    "Task Script": "$task",
-                    "Step Name": "$step"
+                  "Task Name": $name,
+                  "Task Script": $task,
+                  "Step Name": $step
               }')"
 
 

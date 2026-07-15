@@ -18,11 +18,18 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /opt/mario-agent
 COPY . .
 
-RUN pip install --no-cache-dir \
-    "setuptools<65" "wheel<0.38" \
-    && pip install --no-cache-dir --upgrade pip==23.3.2
+RUN pip install --no-cache-dir --upgrade pip==23.3.2
 
-RUN pip install -e .
+RUN pip --default-timeout=600 install \
+    --index-url https://download.pytorch.org/whl/cpu \
+    torch
+
+RUN pip install --no-cache-dir \
+    "setuptools<65" \
+    "wheel<0.38"
+
+
+RUN pip install --no-cache-dir -e .
 
 
 # Non-previleged container
