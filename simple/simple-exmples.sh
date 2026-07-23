@@ -409,3 +409,36 @@ tasktide \
 JOB_ID="425103"
 squeue -u $USER -j "$JOB_ID"
 sacct -j $JOB_ID --format=JobID,JobName,State,Elapsed,AllocCPUS,ReqMem,MaxRSS,AveRSS,MaxVMSize,AveCPU
+
+
+
+######################################################
+######################################################
+## 
+## d). Workflow Mode
+## 
+######################################################
+######################################################
+
+
+# Import R version jobs
+tasktide \
+    manager \
+        --repository-type "nosql" \
+        --method "Import" \
+        --delimiter "|" \
+        --nested-delimiter "," \
+        --target "WORKITEM" \
+        --step-name "Rscript-Jobs" \
+        --target-file "$wrk/stringVersionTasks.txt"
+
+
+tasktide \
+    manager \
+        --repository-type "sqlite" \
+        --file-path "$wrk/tasktide-sqlite" \
+        --method "Import" \
+        --delimiter "|" \
+        --target "WORKITEM" \
+        --step-name "SleepJobs" \
+        --target-file "$wrk/sleepTasks.txt"
