@@ -421,7 +421,30 @@ sacct -j $JOB_ID --format=JobID,JobName,State,Elapsed,AllocCPUS,ReqMem,MaxRSS,Av
 ######################################################
 
 
+# Configure workload
+tasktide \
+    manager \
+        --repository-type "nosql" \
+        --method "Add" \
+        --step-name "Rscript-Jobs" \
+        --workflow-name "Simple Examples" \
+        --target "STEP"
+
+tasktide \
+    manager \
+        --repository-type "nosql" \
+        --method "Add" \
+        --step-name "SleepJobs" \
+        --workflow-name "Simple Examples" \
+        --target "STEP"
+
+
+
+
 # Import R version jobs
+export wrk="/opt/tasktide-use-case"
+cd $wrk
+
 tasktide \
     manager \
         --repository-type "nosql" \
@@ -435,10 +458,24 @@ tasktide \
 
 tasktide \
     manager \
-        --repository-type "sqlite" \
-        --file-path "$wrk/tasktide-sqlite" \
+        --repository-type "nosql" \
         --method "Import" \
         --delimiter "|" \
         --target "WORKITEM" \
         --step-name "SleepJobs" \
         --target-file "$wrk/sleepTasks.txt"
+
+
+
+# Run sequential scanner
+tasktide \
+    engine \
+        --repository-type "nosql" \
+        --target "WORKITEM" \
+        --step-name "Rscript-Jobs,SleepJobs" \
+        --execution-policy "BATCH" \
+        --worker-pool-size "1" \
+        --worker-window-size "1" \
+        --item-task-threads "1" \
+        --result-set-size "2"
+
