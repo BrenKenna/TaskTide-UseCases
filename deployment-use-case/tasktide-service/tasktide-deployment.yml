@@ -159,8 +159,8 @@ services:
 #############################################
 
 
-# Spins-up 3 web apps
-  mario_trainer:
+# Spins-up 3 web apps: mario_traine
+  mario_ai_agent:
     image: bkenna/tasktide:apptainer
 
     cap_add:
@@ -192,7 +192,7 @@ services:
         - --target
         - "WORKITEM"
         - --step-name
-        - "TrainMarioBros"
+        - "TrainMarioBros,PlayMarioBros"
         - --execution-policy
         - "service"
         - --worker-pool-size
@@ -201,6 +201,12 @@ services:
         - "4"
         - --item-task-threads
         - "2"
+        - "--result-set-size"
+        - "2"
+        - "--acquisition-mode"
+        - "SCANNER"
+        - "--strategy-type"
+        - "ROUND_ROBIN"
 
     deploy:
       replicas: 3

@@ -66,7 +66,9 @@ then
     # Enqueue play task
     stepName="PlayMarioBros"
     taskLabel="PlayMario_Bros-${WORLD}_Level-$LEVEL"
-    taskScript="apptainer docker://bkenna/mario-agent play --video --model-path $WRK/mario_$WORLD_$LEVEL_ppo.zip"
+    appTainer="apptainer --bind /data/mario:/data --env PYTHONPATH=/opt/mario-agent:$PYTHONPATH /opt/mario-agent/mario-agent.sif"
+    task="play --video --model-path $WRK/mario_$WORLD_$LEVEL_ppo.zip"
+    taskScript="$appTainer $task"
 
     curl -v -H "Content-Type: application/json" \
        -X POST http://tasktide_app/services/workitem/create \

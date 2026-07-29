@@ -425,6 +425,7 @@ sacct -j $JOB_ID --format=JobID,JobName,State,Elapsed,AllocCPUS,ReqMem,MaxRSS,Av
 tasktide \
     manager \
         --repository-type "nosql" \
+        --nosql-database-type "document" \
         --method "Add" \
         --step-name "Rscript-Jobs" \
         --workflow-name "Simple Examples" \
@@ -433,12 +434,11 @@ tasktide \
 tasktide \
     manager \
         --repository-type "nosql" \
+        --nosql-database-type "document" \
         --method "Add" \
         --step-name "SleepJobs" \
         --workflow-name "Simple Examples" \
         --target "STEP"
-
-
 
 
 # Import R version jobs
@@ -477,5 +477,9 @@ tasktide \
         --worker-pool-size "1" \
         --worker-window-size "1" \
         --item-task-threads "1" \
-        --result-set-size "2"
+        --result-set-size "2" \
+        --acquisition-mode "SCANNER" \
+        --strategy-type "ROUND_ROBIN" \
+        --iteration-limit 4
+
 

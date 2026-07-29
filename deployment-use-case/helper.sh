@@ -179,8 +179,45 @@ Wrapping the env in a VecTransposeImage.
 ##################################################
 
 
-# 
+# Deploy
 docker compose --file tasktide-deployment.yml up -d
+
+'''
+[+] up 12/12
+ ✔ Network tasktide-service_dbNet               Created                                                                                            0.1s
+ ✔ Network tasktide-service_tasktide_web        Created                                                                                            0.0s
+ ✔ Network tasktide-service_nginx_alb           Created                                                                                            0.0s
+ ✔ Container couchdb                            Created                                                                                            0.1s
+ ✔ Container tasktide-service-initCouchDB-1     Created                                                                                            0.1s
+ ✔ Container tasktide-service-tasktide_webapi-3 Created                                                                                            0.1s
+ ✔ Container tasktide-service-tasktide_webapi-1 Created                                                                                            0.1s
+ ✔ Container tasktide-service-tasktide_webapi-2 Created                                                                                            0.1s
+ ✔ Container tasktide_app                       Created                                                                                            0.2s
+ ✔ Container tasktide-service-mario_ai_agent-1   Created                                                                                            0.2s
+ ✔ Container tasktide-service-mario_ai_agent-2   Created                                                                                            0.2s
+ ✔ Container tasktide-service-mario_ai_agent-3   Created                                                                                            0.2s
+
+'''
+
+
+# Register workflow
+tasktide \
+    manager \
+        --repository-type "nosql" \
+        --nosql-database-type "document" \
+        --method "Add" \
+        --step-name "TrainMarioBros" \
+        --workflow-name "Mario Bros AI Agent" \
+        --target "STEP"
+
+tasktide \
+    manager \
+        --repository-type "nosql" \
+        --nosql-database-type "document" \
+        --method "Add" \
+        --step-name "PlayMarioBros" \
+        --workflow-name "Mario Bros AI Agent" \
+        --target "STEP"
 
 
 
@@ -210,124 +247,7 @@ curl http://localhost/services/workitem/get?id=WorkItem-29b2c40b-196f-42f3-a100-
 
 ''' ---> Running without "privileged: true" causes apptainer to fail with 255 and no visible error message.
 
-{
-  "DoneDate": 1783951467114,
-  "Id": "WorkItem-0a4e50c2-1082-471d-8537-183c7a8aa978",
-  "ItemName": "BusyBoxMessage-2",
-  "ItemState": "DONE",
-  "ItemType": "SINGLE",
-  "Job Environment Id": "JobEnvironment-ffe75a89-952d-4f89-8416-649e402ca709",
-  "LockDate": 1783951462733,
-  "LockId": "MTc4Mzk1MTQ2MjczMTlkODQ3YzE4LWVjZTUtNDE1Ny05YzIwLWQ5MmU0ODg3OGEzNQ==",
-  "StepId": "Step-6247e9fa-df6d-4d7a-adab-74e1bf442d43",
-  "StepName": "BusyBoxMessage",
-  "TaskCount": 1,
-  "TaskDone": 1,
-  "Workload": {
-    "TaskMap": {
-      "BusyBoxMessage-2": {
-        "Job Environment Id": "JobEnvironment-ffe75a89-952d-4f89-8416-649e402ca709",
-        "Task": "apptainer run docker://busybox echo \"Hello from BusyBox-2\"",
-        "Task Log": {
-          "CPU Duration": 0,
-          "End Time": 1783951467114,
-          "Exit Code": 0,
-          "Process Id": 121,
-          "Process Log": {
-            "Stderr": [
-              "Hello from BusyBox-2"
-            ],
-            "Stdout": [
-              "Hello from BusyBox-2"
-            ],
-            "id": "ProcessLog-7e4d701a-5152-4fa4-ab58-177120757193"
-          },
-          "Start Time": 1783951463903,
-          "Thread Name": "pool-3-thread-1",
-          "id": "TaskLogging-2a70f824-cb75-4617-93b2-f00435ce4ee2"
-        },
-        "Task Name": "BusyBoxMessage-2",
-        "Task State": "COMPLETE",
-        "Work Item Id": "WorkItem-0a4e50c2-1082-471d-8537-183c7a8aa978",
-        "annotations": {
-          "Annotation Id": "CustomAnnotation-9173e915-efab-4882-9ea7-fd50c72e8be5",
-          "Annotation Map": {}
-        },
-        "id": "ItemTask-2416d2d3-550a-455f-be28-e39d2d1b25e9"
-      }
-    },
-    "WorkloadType": "SINGLE",
-    "earliestDone": 1783951467114,
-    "id": "Workload-d38dd0c3-4f20-4c0a-a7c7-fac7690766c1",
-    "latestDone": 1783951467114,
-    "workloadSize": 1
-  },
-  "annotations": {
-    "Annotation Id": "CustomAnnotation-0f99a16c-7b9d-41c3-a569-753460dcc00b",
-    "Annotation Map": {}
-  },
-  "collection": "BusyBoxMessage",
-  "workloadSize": 1
-}
-
-
-{
-  "DoneDate": 0,
-  "Id": "WorkItem-351d3b6c-ab83-473f-a21a-32a318ec4ff1",
-  "ItemName": "BusyBoxMessage-3",
-  "ItemState": "ERROR",
-  "ItemType": "SINGLE",
-  "Job Environment Id": "JobEnvironment-ffe75a89-952d-4f89-8416-649e402ca709",
-  "LockDate": 1783951957305,
-  "LockId": "MTc4Mzk1MTk1NzMwNTZjYTY4NjdiLWNmNmYtNDhiMS1iODhkLWRlNjc0NjI3NWFhMQ==",
-  "StepId": "Step-6247e9fa-df6d-4d7a-adab-74e1bf442d43",
-  "StepName": "BusyBoxMessage",
-  "TaskCount": 1,
-  "TaskDone": 0,
-  "Workload": {
-    "TaskMap": {
-      "BusyBoxMessage-3": {
-        "Job Environment Id": "JobEnvironment-ffe75a89-952d-4f89-8416-649e402ca709",
-        "Task": "apptainer run docker://busybox echo \"Hello from BusyBox-3\"",
-        "Task Log": {
-          "CPU Duration": 0,
-          "End Time": 1783951961422,
-          "Exit Code": 255,
-          "Process Id": 220,
-          "Process Log": {
-            "Stderr": [],
-            "Stdout": [],
-            "id": "ProcessLog-b3414548-f77b-41e3-8f04-6670a9511734"
-          },
-          "Start Time": 1783951960518,
-          "Thread Name": "pool-3-thread-2",
-          "id": "TaskLogging-e58d570e-c5be-40be-88ff-999869c5b8a1"
-        },
-        "Task Name": "BusyBoxMessage-3",
-        "Task State": "ERROR",
-        "Work Item Id": "WorkItem-351d3b6c-ab83-473f-a21a-32a318ec4ff1",
-        "annotations": {
-          "Annotation Id": "CustomAnnotation-275ed2b4-4274-4bea-863e-ac847faea54e",
-          "Annotation Map": {}
-        },
-        "id": "ItemTask-e89b8348-7cc7-4f8a-8cc9-cbadbf346d9a"
-      }
-    },
-    "WorkloadType": "SINGLE",
-    "earliestDone": -1,
-    "id": "Workload-6a3099bd-d628-473d-b7fd-824a812059e1",
-    "latestDone": 0,
-    "workloadSize": 1
-  },
-  "annotations": {
-    "Annotation Id": "CustomAnnotation-eca18777-bf56-4eeb-b6f5-8dfe616db1de",
-    "Annotation Map": {}
-  },
-  "collection": "BusyBoxMessage",
-  "workloadSize": 1
-}
-
-'''
+''' 
 
 
 # Enqueue workload
@@ -357,10 +277,10 @@ done
 
 '''
 
-"WorkItem-ab68adac-8b7d-46a3-a128-3b7e10e2b3bd"
-"WorkItem-3f97acb3-f809-4d1e-bc18-a92456d9a6b7"
-"WorkItem-c3f14f5e-5493-4cb1-97e6-73b400f62b1d"
-"WorkItem-a4b804fe-621d-4022-bc16-fc2f5e1e15ff"
+"WorkItem-58b1ead7-357e-4ea6-8854-9a1f6336efff"
+"WorkItem-28ddb681-a854-41db-a014-b67ad7fd78be"
+"WorkItem-291b8258-f561-4db7-ba93-d9b150dfa563"
+"WorkItem-01767c72-58e0-409a-9d97-c014839b98fe"
 
 '''
 
