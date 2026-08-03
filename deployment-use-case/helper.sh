@@ -169,6 +169,17 @@ Wrapping the env in a VecTransposeImage.
 '''
 
 
+# Check applying model
+export PYTHONPATH="/opt/mario-agent":$PYTHONPATH
+PPO="/data/mario/mario/world-2/level-1/mario_2_1_ppo"
+
+mkdir -p /data/mario/videos && cd /data/mario/videos
+
+mario-agent --mode play --model-path "$PPO" --video
+
+
+
+
 
 ##################################################
 ##################################################
@@ -181,6 +192,7 @@ Wrapping the env in a VecTransposeImage.
 
 # Deploy
 docker compose --file tasktide-deployment.yml up -d
+
 
 '''
 [+] up 12/12
@@ -209,6 +221,7 @@ tasktide \
         --step-name "TrainMarioBros" \
         --workflow-name "Mario Bros AI Agent" \
         --target "STEP"
+
 
 tasktide \
     manager \
@@ -304,7 +317,6 @@ docker container logs tasktide-service-mario_trainer-1
 2026-07-08 14:31:59 INFO  [ pool-2-thread-2 -> org.tasktide.engine.worker.TaskTideEngineWorker.sampleWorkload ]: Processing retrieved workload of size '0'
 2026-07-08 14:32:09 INFO  [ main -> org.tasktide.engine.worker.TaskTideEngineWorker.processSampling ]: Waiting on '2' to process window sizes of '4'
 2026-07-08 14:32:09 INFO  [ main -> org.tasktide.engine.worker.TaskTideEngineWorker.processSampling ]: Waiting on task: 'Task-0'
-
 
 
 INFO:    Converting OCI blobs to SIF format

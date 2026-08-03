@@ -508,13 +508,18 @@ do
   do
       taskScript="apptainer run docker://bkenna/mario-agent train --world $world --level $level --timesteps 6000"
       taskLabel="Mario-World${world}-Level${level}"
-      curl -H "Content-Type: application/json" \
+      json=$(jq -n \
+        --arg name "$taskLabel" \
+        --arg script "$taskScript" \
+        --arg step "TrainMarioBros" \
+          '{
+          "Task Name": $name,
+          "Task Script": $script,
+          "Step Name": $step
+      }')
+      curl -s -H "Content-Type: application/json" \
         -X POST http://localhost/services/workitem/create \
-        -d '{
-          "Task Name": '"$taskLabel"',
-          "Task Script": '"$taskScript"',
-          "Step Name": "Mario-Training"
-        }' \
+        -d "$json" \
       | jq ".Id"
   done
 done
@@ -549,21 +554,21 @@ for ( $iter = 0; $iter -lt $replicas; $iter++ ) {
 
 
 # Build container
-docker build -t mario-agent -f mario-agent.Dockerfile .
+docker image build -t mario-agent -f mario-agent.Dockerfile .
 docker tag mario-agent:latest bkenna/mario-agent:latest
 docker push bkenna/mario-agent:latest 
 
 
 
 # Build with apptainer
-docker build -t tasktide:latest -f tasktide.Dockerfile .
+docker image build -t tasktide:latest -f tasktide.Dockerfile .
 docker tag tasktide:latest bkenna/tasktide:latest
 docker push bkenna/tasktide:latest
 
 
 
 # Build with apptainer
-docker build -t tasktide:apptainer -f tasktide.Dockerfile .
+docker image build -t tasktide:apptainer -f tasktide.Dockerfile .
 docker tag tasktide:apptainer bkenna/tasktide:apptainer
 docker push bkenna/tasktide:apptainer
 
@@ -579,6 +584,7 @@ apptainer run \
   --env 'PYTHONPATH=/opt/mario-agent:$PYTHONPATH' \
   --bind ./mario-data:/data \
   ./mario-agent.sif train --world 1 --level 1 --timesteps 6000
+
 
 
 # Engine overwritting with 

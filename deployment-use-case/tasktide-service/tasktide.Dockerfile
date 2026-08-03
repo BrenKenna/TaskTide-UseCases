@@ -9,7 +9,10 @@ RUN apt-get update && \
         unzip \
         jq \
         curl \
-        && \
+        fuse \
+        squashfuse \
+        apptainer && \
+    mkdir -p /home/tasktide/.apptainer && \
     rm -rf /var/lib/apt/lists/*
 
 

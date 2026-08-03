@@ -57,6 +57,7 @@ chown -R bren:bren /opt/tasktide-use-case/
 
 # Spinup couchDB backend for testing
 docker container run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=password -p 5984:5984 couchdb:latest
+
 curl -X PUT http://admin:password@localhost:5984/tasktide_database
 
 curl -X GET http://admin:password@localhost:5984/_all_dbs | jq

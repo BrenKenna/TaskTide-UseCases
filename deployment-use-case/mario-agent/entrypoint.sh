@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # Parse arguments
 export PYTHONPATH=/opt/mario-agent:$PYTHONPATH
 
@@ -38,6 +37,10 @@ case "$MODE" in
           MODEL_PATH="$2"
           shift 2
           ;;
+        --video)
+          VIDEO="--video"
+          shift 1
+          ;;
         *)
           echo "Unknown arg: $1"
           exit 1
@@ -65,10 +68,10 @@ then
 
     # Enqueue play task
     stepName="PlayMarioBros"
-    taskLabel="PlayMario_Bros-${WORLD}_Level-$LEVEL"
-    appTainer="apptainer --bind /data/mario:/data --env PYTHONPATH=/opt/mario-agent:$PYTHONPATH /opt/mario-agent/mario-agent.sif"
-    task="play --video --model-path $WRK/mario_$WORLD_$LEVEL_ppo.zip"
-    taskScript="$appTainer $task"
+    taskLabel="PlayMarioBros-World-${WORLD}_Level-${LEVEL}"
+    containerCMD="apptainer run --bind /data/mario:/data --env PYTHONPATH=/opt/mario-agent:\$PYTHONPATH /opt/mario-agent/mario-agent.sif"
+    task="play --video --model-path $WRK/mario_${WORLD}_${LEVEL}_ppo"
+    taskScript="$containerCMD $task"
 
     curl -v -H "Content-Type: application/json" \
        -X POST http://tasktide_app/services/workitem/create \
@@ -77,9 +80,9 @@ then
             --arg task "$taskScript" \
             --arg step "$stepName" \
               '{
-                  "Task Name": $name,
-                  "Task Script": $task,
-                  "Step Name": $step
+                "Task Name": $name,
+                "Task Script": $task,
+                "Step Name": $step
               }')"
 
 
@@ -88,17 +91,17 @@ elif [ "$MODE" == "play" ]
 then
 
     # Setup working directory
-    WRK="/data/mario/world-$WORLD/level-$LEVEL"
+    WRK="/data/mario/videos/world-${WORLD}/level-${LEVEL}"
     mkdir -p $WRK && cd $WRK
 
     # Play agent using the trained model
-    mario-agent --mode play \
-        --model-path "mario_$WORLD_$LEVEL_ppo" \       
-        --video
+    mario-agent \
+      --mode play \
+      --model-path "$MODEL_PATH" \       
+      --video
 
 else
     echo "Usage:"
     echo "  mario-agent train --world 1 --level 1 --timesteps 6000"
     echo "  mario-agent play --model-path mario_1_1_ppo"
-
 fi

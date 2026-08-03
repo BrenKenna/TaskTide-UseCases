@@ -181,7 +181,6 @@ services:
       - ./tasktide_data:/opt/tasktide/tasktide-process-executor-streams
       - ../sif/mario-agent.sif:/opt/mario-agent/mario-agent.sif:ro
       - ./mario-data/:/data/mario:rw
-      
 
     working_dir: /opt/tasktide
 
