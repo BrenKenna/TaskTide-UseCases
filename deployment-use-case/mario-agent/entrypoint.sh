@@ -34,12 +34,20 @@ case "$MODE" in
     while [[ $# -gt 0 ]]; do
       case "$1" in
         --model-path)
-          MODEL_PATH="$2"
+          MODEL_PATH=$( echo $2 | sed 's/.zip//g' )
           shift 2
           ;;
         --video)
           VIDEO="--video"
           shift 1
+          ;;
+        --max-retries)
+          MAX_RETRIES=${2:-5}
+          shift 2
+          ;;
+        --stop-after)
+          STOP_AFTER=${2:-5}
+          shift 2
           ;;
         *)
           echo "Unknown arg: $1"
@@ -70,7 +78,7 @@ then
     stepName="PlayMarioBros"
     taskLabel="PlayMarioBros-World-${WORLD}_Level-${LEVEL}"
     containerCMD="apptainer run --bind /data/mario:/data --env PYTHONPATH=/opt/mario-agent:\$PYTHONPATH /opt/mario-agent/mario-agent.sif"
-    task="play --video --model-path $WRK/mario_${WORLD}_${LEVEL}_ppo"
+    task="play --video --model-path $WRK/mario_${WORLD}_${LEVEL}_ppo --max-retries 10 --stop-after 5"
     taskScript="$containerCMD $task"
 
     curl -v -H "Content-Type: application/json" \
@@ -91,14 +99,18 @@ elif [ "$MODE" == "play" ]
 then
 
     # Setup working directory
+    WORLD=$(basename $MODEL_PATH | cut -d '_' -f 2)
+    LEVEL=$(basename $MODEL_PATH | cut -d '_' -f 3)
     WRK="/data/mario/videos/world-${WORLD}/level-${LEVEL}"
     mkdir -p $WRK && cd $WRK
 
     # Play agent using the trained model
     mario-agent \
       --mode play \
-      --model-path "$MODEL_PATH" \       
-      --video
+      --model-path "$MODEL_PATH" \
+      --video \
+      --max-retries $MAX_RETRIES \
+      --stop-after-level $STOP_AFTER
 
 else
     echo "Usage:"

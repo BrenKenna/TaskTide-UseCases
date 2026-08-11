@@ -191,6 +191,7 @@ mario-agent --mode play --model-path "$PPO" --video
 
 
 # Deploy
+docker compose --file tasktide-deployment.yml down --remove-orphans
 docker compose --file tasktide-deployment.yml up -d
 
 
@@ -263,10 +264,10 @@ curl http://localhost/services/workitem/get?id=WorkItem-29b2c40b-196f-42f3-a100-
 ''' 
 
 
-# Enqueue workload
+# Enqueue workload: docker compose --file tasktide-deployment.yml up -d 
 stepName="TrainMarioBros"
-for world in {1..2}; do
-    for level in {1..2}; do
+for world in {1..3}; do
+    for level in {1..3}; do
         containerCMD="apptainer run --bind /data/mario:/data --env PYTHONPATH=/opt/mario-agent:\$PYTHONPATH /opt/mario-agent/mario-agent.sif"
         taskScript="$containerCMD train --world $world --level $level --timesteps 6000"
         taskLabel="Mario-World${world}-Level${level}"
@@ -290,10 +291,15 @@ done
 
 '''
 
-"WorkItem-58b1ead7-357e-4ea6-8854-9a1f6336efff"
-"WorkItem-28ddb681-a854-41db-a014-b67ad7fd78be"
-"WorkItem-291b8258-f561-4db7-ba93-d9b150dfa563"
-"WorkItem-01767c72-58e0-409a-9d97-c014839b98fe"
+"WorkItem-56b1bebc-e9db-4e44-a27d-b71553879e46"
+"WorkItem-d4a10e5a-ec4e-4eaa-84ec-431e0b82578c"
+"WorkItem-c559a6d7-1772-4513-9216-25cbc4f1c96b"
+"WorkItem-66434944-9a43-4c69-9937-e463f9472519"
+"WorkItem-f287baf4-9b1b-4185-9f84-bd417dbe5127"
+"WorkItem-f7868d53-821f-450e-809c-ddb5d4decc10"
+"WorkItem-689d5a95-ce7b-416c-abd2-a0bea66abb3b"
+"WorkItem-56472a84-f432-4f5a-b323-bc87747f61e7"
+"WorkItem-2fb3a2c4-ba2f-4b51-8a01-862c8ab21959"
 
 '''
 
@@ -325,3 +331,111 @@ INFO:    Fetching OCI image...
 
 
 '''
+
+
+
+
+##################################################################################
+##################################################################################
+## 
+## 4). Troubleshooting Notes
+## 
+##################################################################################
+##################################################################################
+
+
+
+# Build container
+docker image build -t mario-agent -f mario-agent.Dockerfile .
+docker tag mario-agent:latest bkenna/mario-agent:latest
+docker push bkenna/mario-agent:latest 
+
+
+
+# Build with apptainer
+docker image build -t tasktide:latest -f tasktide.Dockerfile .
+docker tag tasktide:latest bkenna/tasktide:latest
+docker push bkenna/tasktide:latest
+
+
+
+# Build with apptainer
+docker image build -t tasktide:apptainer -f tasktide.Dockerfile .
+docker tag tasktide:apptainer bkenna/tasktide:apptainer
+docker push bkenna/tasktide:apptainer
+
+
+
+# Build apptainer sif
+cd use-cases/deployment-use-case/sif
+apptainer build mario-agent.sif docker-daemon://mario-agent:latest
+apptainer build tasktide-apptainer.sif docker-daemon://tasktide:apptainer
+
+
+mkdir -p mario-data
+apptainer run \
+  --env 'PYTHONPATH=/opt/mario-agent:$PYTHONPATH' \
+  --bind ./mario-data:/data \
+  ./mario-agent.sif train --world 1 --level 1 --timesteps 6000
+
+
+# Register a task
+curl -v -H "Content-Type: application/json" \
+  -X POST http://localhost/services/workitem/create \
+  -d '{
+    "Task Name": "10GB File Generation",
+    "Task Script": "openssl rand 10G",
+    "Step Name": "FileGeneration"
+  }' \
+| jq
+
+
+
+# WorkItem-58576d3c-5efb-4f7e-965e-3d933b46e475, ItemTask-223d1591-284b-41b0-a32d-aa7f145e4efc
+docker container run --rm `
+  --network tasktide-service_tasktide_web `
+  --network tasktide-service_dbNet `
+  -v "./microprofile-config.properties:/opt/tasktide/config/META-INF/microprofile-config.properties" `
+  -v "./tasktide_data/:/home/tasktide/" `
+  tasktide:latest engine --step-name "FileGeneration" --worker-pool-size "2" --item-task-threads "2" --worker-window-size "2" --stream-directory "/home/tasktide/"
+
+''' --> Mild time overhead for large log files, but no issue redirecting and logging
+
+2026-07-01 15:01:21 INFO  [ main -> org.tasktide.engine.worker.TaskTideEngineWorker.processSampling ]: Waiting on task: 'Task-0'
+2026-07-01 15:03:43 DEBUG [ pool-3-thread-1 -> org.tasktide.engine.executor.ProcessExecutor.execute ]: Execution complete for task:     openssl rand 10G
+2026-07-01 15:03:43 DEBUG [ pool-3-thread-1 -> org.tasktide.engine.executor.ProcessExecutor.execute ]: Building ProcessLog for task:    openssl rand 10G
+2026-07-01 15:10:24 DEBUG [ pool-3-thread-1 -> org.tasktide.engine.executor.ProcessExecutor.execute ]: Displaying TaskLogging:
+{
+    "CPU Duration": 0,
+    "End Time": 1782918624405,
+    "Exit Code": 0,
+    "Process Id": 108,
+    "Process Log": {
+        "Stderr": [
+            "Std/Stderr logs saved to:\t'/home/tasktide/tasktide-process-executor-streams/ProcessExecutor-8ddd91ab-fe24-4dbb-ac71-7c4a57f3c87d/logs.zip'"
+        ],
+        "Stdout": [
+            "Std/Stderr logs saved to:\t'/home/tasktide/tasktide-process-executor-streams/ProcessExecutor-8ddd91ab-fe24-4dbb-ac71-7c4a57f3c87d/logs.zip'"
+        ],
+        "id": "ProcessLog-794d9e9b-ef75-4351-a3cb-002706136263"
+    },
+    "Start Time": 1782918073556,
+    "Thread Name": "pool-3-thread-1",
+    "id": "TaskLogging-e549d6fa-9cd7-4ebc-aff0-690555217b77"
+}
+'''
+
+
+
+# Trial running apptainer image
+docker container run -it --rm `
+  --cap-add SYS_ADMIN `
+  --security-opt no-new-privileges:true `
+  --device /dev/fuse `
+  -v ./microprofile-config.properties:/opt/tasktide/config/META-INF/microprofile-config.properties:ro `
+  -v ../sif/mario-agent.sif:/opt/mario-agent/mario-agent.sif:ro `
+  -v ./mario-data/:/data/mario:rw `
+  -v ./tasktide_data:/opt/tasktide/tasktide-process-executor-streams:rw `
+  --entrypoint /bin/bash `
+  tasktide:apptainer
+

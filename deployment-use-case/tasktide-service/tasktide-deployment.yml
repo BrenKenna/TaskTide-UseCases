@@ -177,7 +177,7 @@ services:
       - dbNet
 
     volumes:
-      - ./microprofile-config.properties:/opt/tasktide/config/META-INF/microprofile-config.properties
+      - ./microprofile-config.properties:/opt/tasktide/config/META-INF/microprofile-config.properties:ro
       - ./tasktide_data:/opt/tasktide/tasktide-process-executor-streams
       - ../sif/mario-agent.sif:/opt/mario-agent/mario-agent.sif:ro
       - ./mario-data/:/data/mario:rw
