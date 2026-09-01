@@ -65,6 +65,11 @@ curl -X GET http://admin:password@localhost:5984/_all_dbs | jq
 curl -X GET http://admin:password@localhost:5984/tasktide_database/_all_docs | jq
 
 
+# Spinup MaraiDB backend for testing
+docker container run --name mariadb -e MARIADB_ROOT_PASSWORD=password -e MARIADB_DATABASE=tasktide -p 3306:3306 -d mariadb:latest
+
+
+
 
 ###################################################
 ###################################################
