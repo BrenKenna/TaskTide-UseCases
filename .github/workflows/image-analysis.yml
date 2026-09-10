@@ -1,0 +1,33 @@
+name: Image Analysis Evaluation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  use-case:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # STEP 0
+      - name: Validate use case
+        run: ./ci/check-use-case.sh
+        env:
+          ACTIVE: ImageAnalysis
+          IMAGE_TAG: ImageAnalysis
+
+      # STEP 1
+      - name: Build container
+        run: |
+          docker image build \
+            -t function-runner \
+            "$ACTIVE"
+
+      # STEP 2
+      - name: Run unit test
+        run: |
+          docker container run --rm \
+            "$IMAGE_TAG" \
+            ./test.sh

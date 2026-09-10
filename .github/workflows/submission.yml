@@ -1,0 +1,73 @@
+name: TaskTide-UseCase Evalutation
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      active:
+        description: "Use case to act on"
+        required: true
+        type: string
+      
+      imageTage:
+        description: "Use case image tag to use"
+        required: true
+        type: string
+
+
+  workflow_dispatch:
+    inputs:
+      active:
+        description: "Use case to act on"
+        required: true
+        type: string
+      
+      imageTage:
+        description: "Use case image tag to use"
+        required: true
+        type: string
+
+
+jobs:
+  use-case:
+    runs-on: ubuntu-latest
+
+    env:
+      ACTIVE: ${{ inputs.active }}
+      IMAGE_TAG: ${{ inputs.imageTag }}
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # STEP 0
+      - name: Validate active use case
+        run: ./ci/check-use-case.sh
+
+      # STEP 1
+      - name: Build container
+        run: |
+          cd $ACTIVE
+          docker image build -t $IMAGE_TAG .
+
+      # STEP 3
+      - name: Run unit test
+        run: |
+          # Start dependent containers
+          docker container run --rm --name mariadb --detach \
+            -e MARIADB_ROOT_PASSWORD=password \
+            -e MARIADB_DATABASE=tasktide \
+            -p 3306:3306 mariadb:11
+          docker container run --rm --name couchdb --detach \
+            -e COUCHDB_USER=admin \
+            -e COUCHDB_PASSWORD=password \
+            -p 5984:5984 couchdb:3.5
+
+          # Kill containers on error
+          trap 'docker container kill mariadb couchdb 2>/dev/null || true' EXIT
+
+          # Start application container
+          docker container run --rm $IMAGE_TAG test.sh

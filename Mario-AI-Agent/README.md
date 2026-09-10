@@ -16,20 +16,7 @@ This application executes a Reinforcement Learning agent playing Super Mario Bro
 
 ## 🚀 Installation & Prerequisites
 
-### Option A: Local Python Environment
-Ensure you have Python 3.10+ installed.
-
-1. Install system-level dependencies required for OpenAI Gym/Gymnasium environments:
-   ```bash
-   # Ubuntu/Debian
-   sudo apt-get update && sudo apt-get install -y swig python3-dev
-   ```
-2. Install the package locally:
-   ```bash
-   pip install .
-   ```
-
-### Option B: Docker Containerization
+### Docker Containerization
 A pre-built image is available on DockerHub. You can pull or build it directly:
 ```bash
 # Pull from DockerHub
