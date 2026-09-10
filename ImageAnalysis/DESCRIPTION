@@ -1,0 +1,16 @@
+Package: imageAnalysis
+Title: SparkR Image Analysis Package for Stacking Queryable Images
+Authors@R: person("Brendan", "Kenna", email = "Brendan.Kenna.BK@example.com", role = c("aut", "cre"))
+Description: Provides tools for stacking queryable images into HDFS compatible formats 
+    using SparkR and generating transformed image matrices utilizing SQL statements. 
+    Designed to work natively alongside decentralized workflow orchestration layers.
+License: Apache License 2.0
+Version: 1.0.0
+URL: https://tasktide.org
+Depends: R (>= 4.2.0)
+Imports: SparkR, jpeg, png, futile.logger
+SystemRequirements: Apache Spark (>= 3.0.0)
+License: MIT
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3

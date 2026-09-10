@@ -1,0 +1,27 @@
+package:
+  name: r-imageanalysis
+  version: "1.0.0"
+
+source:
+  url: https://github.com/BrenKenna/Image-Analysis
+
+requirements:
+  host:
+    - r-base >=4.0
+    - openjdk
+  run:
+    - r-base >=4.0
+    - openjdk
+    - spark >=3.0
+
+about:
+  home: https://github.com/BrenKenna/Image-Analysis
+  license: Apache-2.0
+  summary: 'SparkR image analysis package for stacking querably images into HDFS compatible format, and generating images with SQL statements'
+  project: https://tasktide.org
+  project_docs: https://docs.tasktide.org
+  project_source: https://github.tasktide.org
+
+extra:
+  recipe-maintainers:
+    - BrenKenna
