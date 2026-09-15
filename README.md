@@ -13,7 +13,7 @@ We also encourage our members to configure container images of their data applic
 <br>
 
 <p align="center">
-  <img src="/assets/tasktide-non-tech-arch.png" alt="TaskTide Architecture" width="650"/>
+  <img src="/assets/tasktide-non-tech-arch.png" alt="TaskTide non-technical architecture"/>
 </p>
 
 <br>
