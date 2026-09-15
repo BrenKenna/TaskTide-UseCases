@@ -28,6 +28,7 @@ A containerized environment for executing Julia functions.
 
  > **[FunctionRunner/ ➞](./FunctionRunner/)**
 
+<br>
 
 ### 2). Image Analysis
 
@@ -35,6 +36,7 @@ An image-analysis use case demonstrating the TaskTide execution model.
 
  > **[ImageAnalysis/ ➞](./ImageAnalysis/)**
 
+<br>
 
 ### 3). Mario AI Agent
 
@@ -42,6 +44,7 @@ An AI agent capable of interacting with the Mario environment.
 
  > **[Mario-AI-Agent/ ➞](./Mario-AI-Agent/)**
 
+<br>
 
 ### 4). Bioinformatic Workflow
 
