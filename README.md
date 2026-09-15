@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="/assets/logo1.jpg" alt="TaskTide Logo" width="150"/>
+  <img src="/assets/logo1.jpg" alt="TaskTide Logo" width="250"/>
 </p>
 
 # TaskTide Use Cases
@@ -11,7 +11,7 @@ Each use case maintains their own code repository separately, and just simply re
 <br>
 
 <p align="center">
-  <img src="/assets/tasktide-non-tech-arch.png" alt="TaskTide Architecture" width="150"/>
+  <img src="/assets/tasktide-non-tech-arch.png" alt="TaskTide Architecture" width="300"/>
 </p>
 
 <br>
