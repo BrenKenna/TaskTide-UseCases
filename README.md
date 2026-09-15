@@ -47,7 +47,7 @@ An AI agent capable of interacting with the Mario environment.
 
 A collection of shell scripts for exome/genome sequence alignment and downstream processing.
 
- > **[Workflows/ ➞](./Bioinformatic-Workflows/)**
+ > **[Workflows/ ➞](./BioinformaticWorkflows/)**
 
 <br>
 
