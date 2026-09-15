@@ -2,7 +2,7 @@
 
 Thank you for contributing to the TaskTide use-case collection.
 
-This repository collects examples of TaskTide being used in the wild. It is not the core TaskTide project; it provides a common place to share, build, and evaluate real-world use cases.
+This repository collects examples of TaskTide being used in the wild to provide a collaborative space to share, build, and evaluate real-world use cases with each other.
 
 For TaskTide itself, see [tasktide.org](https://tasktide.org/) and [github.tasktide.org](https://github.tasktide.org/)
 
