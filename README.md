@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="/assets/logo1.jpg" alt="TaskTide Logo" width="225"/>
+  <img src="/repo-assets/logo1.jpg" alt="TaskTide Logo" width="225"/>
 </p>
 
 # TaskTide Use Cases
@@ -13,7 +13,7 @@ We also encourage our members to configure container images of their data applic
 <br>
 
 <p align="center">
-  <img src="/assets/tasktide-non-tech-arch.png" alt="TaskTide non-technical architecture"/>
+  <img src="/repo-assets/tasktide-non-tech-arch.png" alt="TaskTide non-technical architecture"/>
 </p>
 
 <br>
