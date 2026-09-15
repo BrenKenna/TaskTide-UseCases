@@ -11,7 +11,7 @@ Each use case maintains their own code repository separately, and just simply re
 <br>
 
 <p align="center">
-  <img src="/assets/tasktide-non-tech-arch.png" alt="TaskTide Architecture" width="500"/>
+  <img src="/assets/tasktide-non-tech-arch.png" alt="TaskTide Architecture" width="650"/>
 </p>
 
 <br>
