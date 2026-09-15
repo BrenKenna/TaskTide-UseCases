@@ -33,21 +33,21 @@ A containerized environment for executing Julia functions.
 
 An image-analysis use case demonstrating the TaskTide execution model.
 
->    [`ImageAnalysis/ ➞`](./ImageAnalysis/)
+>    **[ImageAnalysis/ ➞](./ImageAnalysis/)**
 
 
 ### 3). Mario AI Agent
 
 An AI agent capable of interacting with the Mario environment.
 
->    [`Mario-AI-Agent/ ➞`](./Mario-AI-Agent/)
+>    **[Mario-AI-Agent/ ➞](./Mario-AI-Agent/)**
 
 
 ### 4). Bioinformatic Workflow
 
 A collection of shell scripts for exome/genome sequence alignment and downstream processing.
 
->    [`Workflows/ ➞`](./Bioinformatic-Workflows/)
+>    **[Workflows/ ➞](./Bioinformatic-Workflows/)**
 
 <br>
 
