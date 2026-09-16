@@ -4,9 +4,13 @@
 
 # TaskTide Use Cases
 
-TaskTide is a workflow orchestration engine for [data application deployments](https://tasktide.org). Specifically for workflows where there are a collection of variables inputs that each step in a workflow.
+TaskTide is a workflow orchestration engine for [data application deployments](https://tasktide.org). Specifically for workflows where there are a large  collection of variables inputs for each step in a workflow.
 
-Each use case maintains their own code repository separately, and just simply registers a pointer to that here and an additional README.md if they so choose. This setup allows TaskTide userbase to feel more like a community, and so issues, discussions about data applications are all welcomed and encourage here. We just ask our community members to stylize their repository similar to the core TaskTide use cases, where their application abides by common practice (PyPI, R-metaverse, JuliaHub, Conda etc).
+Each use case maintains their own code repository separately, and just simply registers a pointer to that here and an additional README.md descriptor with code highlights of how TaskTide was used to orchestrate deployment.
+
+The setup is intentional to try and allow TaskTide userbase to feel more like a community. So issues, discussions about data applications are all welcomed and encourage here.
+
+We just ask our community members to stylize their repository similar to the core TaskTide use cases, and their application abides by common practice (PyPI, R-metaverse, JuliaHub, Conda etc).
 
 We also encourage our members to configure container images of their data application (apptainer/docker) for simple installs and reproducibility.
 
